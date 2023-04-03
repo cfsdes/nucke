@@ -61,6 +61,7 @@ func main() {
 	
     initialMessage()
 	color.Cyan("Listening on port %d...\n", port)
+    color.Cyan("Interacting with jaeles: %s\n", jaelesApi)
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
