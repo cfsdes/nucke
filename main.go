@@ -7,11 +7,30 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+    "flag"
 )
 
+func parseFlags() (port int, timeout int) {
+	flag.IntVar(&port, "port", 8080, "port number to use")
+	flag.IntVar(&timeout, "timeout", 60, "timeout in seconds")
+	flag.Parse()
+	return
+}
+
 func main() {
+    port, _ := parseFlags()
+
 	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+    server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: http.DefaultServeMux,
+	}
+
+	log.Printf("Listening on port %d...\n", port)
+
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Proxy Handler
