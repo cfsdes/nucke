@@ -12,10 +12,11 @@ import (
 )
 
 
-func parseFlags() (port int, jcAPI string) {
+func parseFlags() (port int, jcAPI string, scope string) {
 	flag.IntVar(&port, "port", 8080, "port number to use")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jcAPI value to send to handler")
-	
+	flag.StringVar(&scope, "scope", "", "regex for scope")
+
     // Add the welcome message to the --help output
 	flag.Usage = func() {
 		initialMessage()
@@ -47,10 +48,10 @@ func initialMessage() {
 }
 
 func main() {
-    port, jaelesApi := parseFlags()
+    port, jaelesApi, scope := parseFlags()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		runner.Handler(w, r, jaelesApi)
+		runner.Handler(w, r, jaelesApi, scope)
 	})
 
     server := &http.Server{

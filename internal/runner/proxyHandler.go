@@ -5,10 +5,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+    "regexp"
+    "fmt"
 )
 
 // Proxy Handler
-func Handler(w http.ResponseWriter, r *http.Request, jaelesApi string) {
+func Handler(w http.ResponseWriter, r *http.Request, jaelesApi string, scope string) {
 	// Convert the raw request to base64
 	requestBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
@@ -17,8 +19,12 @@ func Handler(w http.ResponseWriter, r *http.Request, jaelesApi string) {
 	}
 	requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
 
-    //Send request to jaeles API server
-    SendToJaeles(requestBase64, jaelesApi)
+    // Send request to jaeles API server and filter if scope is specified
+    if scope != "" && regexp.MustCompile(scope).MatchString(r.URL.String()) {
+		SendToJaeles(requestBase64, jaelesApi)
+	} else if scope == "" {
+        SendToJaeles(requestBase64, jaelesApi)
+    }
 
     fowardRequest(w, r)
 	
