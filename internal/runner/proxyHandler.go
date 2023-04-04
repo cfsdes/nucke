@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httputil"
     "regexp"
-    "fmt"
 )
 
 // Proxy Handler
