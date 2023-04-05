@@ -1,4 +1,4 @@
-package scanners
+package runner
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/cfsdes/nucke/internal/helpers"
+	"github.com/cfsdes/nucke/internal/scanners"
 )
 
 func ScannerHandler(r *http.Request, vulnsList []string) {
@@ -19,7 +20,7 @@ func ScannerHandler(r *http.Request, vulnsList []string) {
 	for _, vuln := range vulnsList {
 		switch vuln {
 		case "sqli":
-			_, err := SqliQuery(r, client)
+			_, err := scanners.SqliQuery(r, client)
 			if err != nil {
 				fmt.Println(err)
 			}

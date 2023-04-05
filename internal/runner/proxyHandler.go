@@ -10,7 +10,6 @@ import (
     "log"
 
     "github.com/fatih/color"
-    "github.com/cfsdes/nucke/internal/scanners"
     "github.com/cfsdes/nucke/internal/helpers"
 )
 
@@ -51,7 +50,7 @@ func handler(w http.ResponseWriter, r *http.Request, vulnArgs []string) {
         if helpers.Jaeles {
             SendToJaeles(requestBase64, helpers.JaelesApi)
         }
-        scanners.ScannerHandler(r, vulnArgs)
+        ScannerHandler(r, vulnArgs)
 	} 
 
     fowardRequest(w, r)
