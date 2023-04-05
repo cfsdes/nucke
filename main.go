@@ -11,10 +11,11 @@ import (
 
 
 func main() {
-    port, jaelesApi, jc, scope, listVulns, vulns := helpers.ParseFlags()
+    // Init global variables
+    helpers.InitGlobals()
 
     // List vulns
-    if listVulns {
+    if helpers.ListVulns {
 		color.Blue("Available vulnerabilities:\n\n")
 		for _, vuln := range helpers.VulnList {
 			fmt.Println(vuln)
@@ -24,7 +25,7 @@ func main() {
 	}
 
     // Validate vulns argument
-    vulnArgs, err := helpers.ValidateVulns(vulns)
+    vulnArgs, err := helpers.ValidateVulns(helpers.Vulns)
     if err != nil {
         log.Fatal(err)
     }
@@ -33,5 +34,5 @@ func main() {
     helpers.Banner()
 
 	// Start Proxy
-	runner.StartProxyHandler(port, jc, jaelesApi, scope, vulnArgs)
+	runner.StartProxyHandler(vulnArgs)
 }

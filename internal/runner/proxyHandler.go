@@ -11,23 +11,24 @@ import (
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/scanners"
+    "github.com/cfsdes/nucke/internal/helpers"
 )
 
 // Start Proxy
-func StartProxyHandler(port int, jaeles bool, jaelesApi string, scope string, vulnArgs []string) {
+func StartProxyHandler(vulnArgs []string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, jaeles, jaelesApi, scope, vulnArgs)
+		handler(w, r, vulnArgs)
 	})
 
     server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
+		Addr:    fmt.Sprintf(":%d", helpers.Port),
 		Handler: http.DefaultServeMux,
 	}
 	
-	color.Cyan("Listening on port %d...\n", port)
+	color.Cyan("Listening on port %d...\n", helpers.Port)
 
-    if jaeles {
-        color.Cyan("Interacting with jaeles: %s\n", jaelesApi)
+    if helpers.Jaeles {
+        color.Cyan("Interacting with jaeles: %s\n", helpers.JaelesApi)
     }
 
 	if err := server.ListenAndServe(); err != nil {
@@ -36,7 +37,7 @@ func StartProxyHandler(port int, jaeles bool, jaelesApi string, scope string, vu
 }
 
 // Proxy Handler
-func handler(w http.ResponseWriter, r *http.Request, jaeles bool, jaelesApi string, scope string, vulnArgs []string) {
+func handler(w http.ResponseWriter, r *http.Request, vulnArgs []string) {
 	// Convert the raw request to base64
 	requestBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
@@ -46,15 +47,14 @@ func handler(w http.ResponseWriter, r *http.Request, jaeles bool, jaelesApi stri
 	requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
 
     // Send request to jaeles API server and filter if scope is specified
-    if (scope != "" && regexp.MustCompile(scope).MatchString(r.URL.String()) || scope == "") {
-        if jaeles {
-            SendToJaeles(requestBase64, jaelesApi)
+    if (helpers.Scope != "" && regexp.MustCompile(helpers.Scope).MatchString(r.URL.String()) || helpers.Scope == "") {
+        if helpers.Jaeles {
+            SendToJaeles(requestBase64, helpers.JaelesApi)
         }
-        scanners.ScannerHandler(vulnArgs)
+        scanners.ScannerHandler(r, vulnArgs)
 	} 
 
     fowardRequest(w, r)
-	
 }
 
 func fowardRequest(w http.ResponseWriter, r *http.Request) {

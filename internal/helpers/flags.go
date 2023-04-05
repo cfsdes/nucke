@@ -8,13 +8,14 @@ import (
     "github.com/fatih/color"
 )
 
-func ParseFlags() (port int, jcAPI string, jc bool, scope string, listVulns bool, vulns string) {
+func ParseFlags() (port int, jcAPI string, jc bool, scope string, listVulns bool, vulns string, proxy string) {
 	flag.IntVar(&port, "port", 8080, "proxy port to use")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server")
     flag.BoolVar(&jc, "jc", false, "enable jaeles proxy")
 	flag.StringVar(&scope, "scope", "", "regex for scope")
     flag.BoolVar(&listVulns, "list-vulns", false, "list available vulnerabilities")
     flag.StringVar(&vulns, "vulns", "", "comma-separated list of vulnerabilities to scan. Use -list-vulns to get the options")
+    flag.StringVar(&proxy, "proxy", "", "http proxy to use")
 
     // Add the welcome message to the --help output
 	flag.Usage = func() {
