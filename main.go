@@ -2,69 +2,36 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-    "flag"
-    "os"
+    "log"
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/runner"
+    "github.com/cfsdes/nucke/internal/helpers"
 )
 
 
-func parseFlags() (port int, jcAPI string, scope string) {
-	flag.IntVar(&port, "port", 8080, "port number to use")
-    flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jcAPI value to send to handler")
-	flag.StringVar(&scope, "scope", "", "regex for scope")
-
-    // Add the welcome message to the --help output
-	flag.Usage = func() {
-		initialMessage()
-        color.Cyan("Usage: \n")
-        fmt.Fprintf(flag.CommandLine.Output(), "  %s [flags]\n\n", os.Args[0])
-        color.Cyan("Flags: \n")
-		flag.PrintDefaults()
-	}
-
-    flag.Parse()
-	return
-}
-
-func initialMessage() {
-    // Print a colorful welcome message
-    fmt.Println()
-    color.Blue("Welcome to Nucke Server!")
-    fmt.Println()
-
-    color.Yellow(`
-        ,--,
-  _ ___/ /\|
- ;( )__, )
-; //   '--;
-  \     |
-   ^    ^`)
-
-    fmt.Println()
-}
-
 func main() {
-    port, jaelesApi, scope := parseFlags()
+    port, jaelesApi, jc, scope, listVulns, vulns := helpers.ParseFlags()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		runner.Handler(w, r, jaelesApi, scope)
-	})
-
-    server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
-		Handler: http.DefaultServeMux,
+    // List vulns
+    if listVulns {
+		color.Blue("Available vulnerabilities:\n\n")
+		for _, vuln := range helpers.VulnList {
+			fmt.Println(vuln)
+		}
+        fmt.Println()
+		return
 	}
 
-	
-    initialMessage()
-	color.Cyan("Listening on port %d...\n", port)
-    color.Cyan("Interacting with jaeles: %s\n", jaelesApi)
+    // Validate vulns argument
+    vulnArgs, err := helpers.ValidateVulns(vulns)
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+    // Initial banner
+    helpers.Banner()
+
+	// Start Proxy
+	runner.StartProxyHandler(port, jc, jaelesApi, scope, vulnArgs)
 }

@@ -6,10 +6,37 @@ import (
 	"net/http"
 	"net/http/httputil"
     "regexp"
+    "fmt"
+    "log"
+
+    "github.com/fatih/color"
+    "github.com/cfsdes/nucke/internal/scanners"
 )
 
+// Start Proxy
+func StartProxyHandler(port int, jaeles bool, jaelesApi string, scope string, vulnArgs []string) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, jaeles, jaelesApi, scope, vulnArgs)
+	})
+
+    server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: http.DefaultServeMux,
+	}
+	
+	color.Cyan("Listening on port %d...\n", port)
+
+    if jaeles {
+        color.Cyan("Interacting with jaeles: %s\n", jaelesApi)
+    }
+
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 // Proxy Handler
-func Handler(w http.ResponseWriter, r *http.Request, jaelesApi string, scope string) {
+func handler(w http.ResponseWriter, r *http.Request, jaeles bool, jaelesApi string, scope string, vulnArgs []string) {
 	// Convert the raw request to base64
 	requestBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
@@ -19,11 +46,12 @@ func Handler(w http.ResponseWriter, r *http.Request, jaelesApi string, scope str
 	requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
 
     // Send request to jaeles API server and filter if scope is specified
-    if scope != "" && regexp.MustCompile(scope).MatchString(r.URL.String()) {
-		SendToJaeles(requestBase64, jaelesApi)
-	} else if scope == "" {
-        SendToJaeles(requestBase64, jaelesApi)
-    }
+    if (scope != "" && regexp.MustCompile(scope).MatchString(r.URL.String()) || scope == "") {
+        if jaeles {
+            SendToJaeles(requestBase64, jaelesApi)
+        }
+        scanners.ScannerHandler(vulnArgs)
+	} 
 
     fowardRequest(w, r)
 	
