@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"fmt"
 
-	"github.com/cfsdes/nucke/internal/helpers"
+	"github.com/cfsdes/nucke/internal/utils"
 	"github.com/cfsdes/nucke/internal/scanners"
 )
 
@@ -35,9 +35,9 @@ func ScannerHandler(r *http.Request, vulnsList []string) {
 // Generate HTTP Client with Proxy
 func createHTTPClient() (*http.Client, error) {
     var client *http.Client
-    if helpers.Proxy != "" {
+    if utils.Proxy != "" {
         // Create HTTP client with proxy
-        proxyUrl, err := url.Parse(helpers.Proxy)
+        proxyUrl, err := url.Parse(utils.Proxy)
         if err != nil {
             return nil, fmt.Errorf("failed to parse proxy URL: %s", err)
         }

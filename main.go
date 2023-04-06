@@ -6,18 +6,18 @@ import (
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/runner"
-    "github.com/cfsdes/nucke/internal/helpers"
+    "github.com/cfsdes/nucke/internal/utils"
 )
 
 
 func main() {
     // Init global variables
-    helpers.InitGlobals()
+    utils.InitGlobals()
 
     // List vulns
-    if helpers.ListVulns {
+    if utils.ListVulns {
 		color.Blue("Available vulnerabilities:\n\n")
-		for _, vuln := range helpers.VulnList {
+		for _, vuln := range utils.VulnList {
 			fmt.Println(vuln)
 		}
         fmt.Println()
@@ -25,13 +25,13 @@ func main() {
 	}
 
     // Validate vulns argument
-    vulnArgs, err := helpers.ValidateVulns(helpers.Vulns)
+    vulnArgs, err := utils.ValidateVulns(utils.Vulns)
     if err != nil {
         log.Fatal(err)
     }
 
     // Initial banner
-    helpers.Banner()
+    utils.Banner()
 
 	// Start Proxy
 	runner.StartProxyHandler(vulnArgs)

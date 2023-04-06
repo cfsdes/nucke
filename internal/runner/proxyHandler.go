@@ -10,7 +10,7 @@ import (
     "log"
 
     "github.com/fatih/color"
-    "github.com/cfsdes/nucke/internal/helpers"
+    "github.com/cfsdes/nucke/internal/utils"
 )
 
 // Start Proxy
@@ -20,14 +20,14 @@ func StartProxyHandler(vulnArgs []string) {
 	})
 
     server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", helpers.Port),
+		Addr:    fmt.Sprintf(":%d", utils.Port),
 		Handler: http.DefaultServeMux,
 	}
 	
-	color.Cyan("Listening on port %d...\n", helpers.Port)
+	color.Cyan("Listening on port %d...\n", utils.Port)
 
-    if helpers.Jaeles {
-        color.Cyan("Interacting with jaeles: %s\n", helpers.JaelesApi)
+    if utils.Jaeles {
+        color.Cyan("Interacting with jaeles: %s\n", utils.JaelesApi)
     }
 
 	if err := server.ListenAndServe(); err != nil {
@@ -46,9 +46,9 @@ func handler(w http.ResponseWriter, r *http.Request, vulnArgs []string) {
 	requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
 
     // Send request to jaeles API server and filter if scope is specified
-    if (helpers.Scope != "" && regexp.MustCompile(helpers.Scope).MatchString(r.URL.String()) || helpers.Scope == "") {
-        if helpers.Jaeles {
-            SendToJaeles(requestBase64, helpers.JaelesApi)
+    if (utils.Scope != "" && regexp.MustCompile(utils.Scope).MatchString(r.URL.String()) || utils.Scope == "") {
+        if utils.Jaeles {
+            SendToJaeles(requestBase64, utils.JaelesApi)
         }
         ScannerHandler(r, vulnArgs)
 	} 
