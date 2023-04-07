@@ -3,11 +3,11 @@
 A scanner can be created using the sample file as a starter code.
 
 The scanner should return:
-    - *severity*: Critical, High, Medium, Low or Info
-    - *url*: Vulnerable endpoint identified
-    - *summary*: Vulnerability report (it supports markdown)
-    - *vulnFound*: Boolean value. If true, the scanner will report the vulnerability
-    - *error*
+- *severity*: Critical, High, Medium, Low or Info
+- *url*: Vulnerable endpoint identified
+- *summary*: Vulnerability report (it supports markdown)
+- *vulnFound*: Boolean value. If true, the scanner will report the vulnerability
+- *error*
 
 The Run() function is the function that will be called by the Nucke:
 
