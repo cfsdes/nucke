@@ -26,7 +26,7 @@ The report should be placed in the same directory of plugin.
 
 Example of structure:
 ```
-~/.nucke/templates/
+~/Desktop/nucke-plugins/
     .. sample/
         .. sample.so
         .. report-template.txt
@@ -40,7 +40,7 @@ Configuration file:
 ```yaml
 plugins:
   - name: Example
-    path: ~/.nucke/templates
+    path: ~/Desktop/nucke-plugins/
     ids:
       - sample
       - sqli
