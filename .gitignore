@@ -1,6 +1,2 @@
-security-crawl-maze/
-cmd/katana/katana
-katana
-*.exe
-katana_*/
-katana_*/
+.DS_Store
+nucke

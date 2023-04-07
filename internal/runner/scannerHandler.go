@@ -11,7 +11,6 @@ import (
     "strings"
 
 	"github.com/cfsdes/nucke/internal/utils"
-	"github.com/cfsdes/nucke/internal/parsers"
 )
 
 func ScannerHandler(req *http.Request) {
@@ -21,7 +20,7 @@ func ScannerHandler(req *http.Request) {
 		fmt.Println(err)
 	}
 
-	// Handle Config Plugins
+	// Run Config Plugins
 	for _, plugin := range utils.FilePaths {
 		runPlugin(plugin, req, client)
 	}
@@ -76,7 +75,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
     }
 
     // Call the run() function with a req argument
-	severity, url, rawReq, desc, found, err := runFunc.(func(*http.Request, *http.Client) (string, string, string, string, bool, error))(req, client)
+	severity, url, summary, found, err := runFunc.(func(*http.Request, *http.Client) (string, string, string, bool, error))(req, client)
     if err != nil {
         fmt.Println("Error running plugin:", err)
         os.Exit(1)
@@ -87,6 +86,6 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 		fileExt := filepath.Ext(scannerPlugin)
 		scanName := filepath.Base(scannerPlugin[:len(scannerPlugin)-len(fileExt)])
 		
-		parsers.VulnerabilityOutput(scanName, severity, url, rawReq, desc)
+		VulnerabilityOutput(scanName, severity, url, summary)
 	}
 }
