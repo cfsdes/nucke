@@ -31,6 +31,8 @@ func StartProxyHandler() {
         color.Cyan("Interacting with jaeles: %s\n", utils.JaelesApi)
     }
 
+    fmt.Println()
+
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
@@ -55,6 +57,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
         }
 
         // If config with plugins is provided
+        // TODO: add concurrency
         if utils.Config != "" {
             ScannerHandler(r)
         }
