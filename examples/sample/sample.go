@@ -14,7 +14,8 @@ func Run(r *http.Request, client *http.Client) (string, string, string, bool, er
     var url string = "http://example.com"
     var vulnFound bool = true
     
-    summary := template.ParseTemplateFromFile("template-report.txt", map[string]interface{}{
+    reportContent := template.ReadFileToString("report-template.txt")
+    summary := template.ParseTemplate(reportContent, map[string]interface{}{
         "description": description,
     })
 

@@ -16,7 +16,8 @@ result := template.ParseTemplateFromFile("Hello {{.msg}}", map[string]interface{
 
 Parse template from file:
 ```go
-result := template.ParseTemplateFromFile("template.txt", map[string]interface{}{
-    "description": description,
+templateString, err := template.ReadFileToString("template-report.txt")
+summary := template.ParseTemplate(templateString, map[string]interface{}{
+    "msg": "World",
 })
 ```

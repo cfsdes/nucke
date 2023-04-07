@@ -15,7 +15,7 @@ var Output string
 var FilePaths []string
 
 // Initiate global variables
-func InitGlobals() {
+func init() {
 	Port, JaelesApi, Jaeles, Scope, Proxy, Config, Output = ParseFlags()
 
 	if Config != "" {

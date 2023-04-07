@@ -55,7 +55,7 @@ func ParseConfig(configFile string) (filePaths []string){
 						//Skipping excluded ID
 						continue
 					}
-					filePath := filepath.Join(plugin.Path, file)
+					filePath := filepath.Join(plugin.Path, id, file)
 					filePaths = append(filePaths, filePath)
 				}
 				continue
@@ -66,7 +66,7 @@ func ParseConfig(configFile string) (filePaths []string){
 				continue
 			}
 
-			filePath := filepath.Join(plugin.Path, id+".so")
+			filePath := filepath.Join(plugin.Path, id, id+".so")
 			filePaths = append(filePaths, filePath)
 		}
 	}

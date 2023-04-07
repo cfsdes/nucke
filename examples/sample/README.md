@@ -19,3 +19,29 @@ After created, the scanner should be compiled as a plugin:
 ```bash
 go build -buildmode=plugin -o scanner.so scanner.go
 ```
+
+## Report & Directory Structure
+
+The report should be placed in the same directory of plugin.
+
+Example of structure:
+```
+~/.nucke/templates/
+    .. sample/
+        .. sample.so
+        .. report-template.txt
+    
+    .. sqli/
+        .. sqli.so
+        .. report-template.txt
+```
+
+Configuration file:
+```yaml
+plugins:
+  - name: Example
+    path: ~/.nucke/templates
+    ids:
+      - sample
+      - sqli
+```
