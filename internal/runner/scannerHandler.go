@@ -84,9 +84,8 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 
 	// Parse output if vulnerability is found
 	if found {
-        // TODO: Arrumar o filename, está vindo o diretório e nao o nome do template
 		fileExt := filepath.Ext(scannerPlugin)
-		scanName := scannerPlugin[:len(scannerPlugin)-len(fileExt)]
+		scanName := filepath.Base(scannerPlugin[:len(scannerPlugin)-len(fileExt)])
 		
 		parsers.VulnerabilityOutput(scanName, severity, url, rawReq, desc)
 	}
