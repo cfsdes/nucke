@@ -37,3 +37,8 @@ plugins:
 ## Plugins
 
 Access examples/ folder to understand how to create a plugin
+
+## TODO
+
+- Add concurrency scans
+- Create server option to load the Markdown reports
