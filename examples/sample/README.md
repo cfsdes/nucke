@@ -9,7 +9,7 @@ The scanner should return:
 - **vulnFound**: Boolean value. If true, the scanner will report the vulnerability
 - **error**
 
-The Run() function is the function that will be called by the Nucke:
+The `Run()` function is the function that will be called by the Nucke:
 
 ```go
 func Run(r *http.Request, client *http.Client) (string, string, string, bool, error)
