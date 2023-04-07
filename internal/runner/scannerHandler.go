@@ -6,17 +6,25 @@ import (
 	"fmt"
 
 	"github.com/cfsdes/nucke/internal/utils"
-	"github.com/cfsdes/nucke/internal/scanners"
 )
 
-func ScannerHandler(r *http.Request, vulnsList []string) {
+func ScannerHandler(r *http.Request) {
 	// Create HTTP Client
-	client, err := createHTTPClient()
+	_, err := createHTTPClient()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	// Loop vulnsList
+	/*
+		Vai usar o parser yaml (isso deve ser feito no começo na globals)
+		Pegar todos os plugins .so
+		Para cada plugin, chamar a função run() deles
+		Analisar pela resposta da função run(), 
+		se retornar true, vulnerabilidade foi encontrada
+	*/
+
+	// Handle Config Plugins
+	/*
 	for _, vuln := range vulnsList {
 		switch vuln {
 		case "sqli":
@@ -24,12 +32,9 @@ func ScannerHandler(r *http.Request, vulnsList []string) {
 			if err != nil {
 				fmt.Println(err)
 			}
-		case "xss-script":
-			//XssScript()
-		case "path-traversal":
-			//PathTraversal()
 		}
 	}
+	*/
 }
 
 // Generate HTTP Client with Proxy

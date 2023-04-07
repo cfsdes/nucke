@@ -1,0 +1,12 @@
+plugins:
+  - name: SQL Injection Tests
+    path: ~/Desktop/test
+    ids:
+      - "*"
+    exclude:
+      - sqli
+
+  - name: test
+    path: github.com/projectdiscovery/katana/cmd/katana/
+    ids:
+      - "*"

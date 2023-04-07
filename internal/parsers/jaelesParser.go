@@ -1,4 +1,4 @@
-package runner
+package parsers
 
 import (
 	"fmt"

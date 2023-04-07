@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/cfsdes/nucke/internal/parsers"
 )
 
 // Flags
@@ -8,11 +9,15 @@ var Port int
 var JaelesApi string
 var Jaeles bool
 var Scope string
-var ListVulns bool
-var Vulns string
 var Proxy string
+var Config string
+var filePaths []string
 
 // Initiate global variables
 func InitGlobals() {
-	Port, JaelesApi, Jaeles, Scope, ListVulns, Vulns, Proxy = ParseFlags()
+	Port, JaelesApi, Jaeles, Scope, Proxy, Config = ParseFlags()
+
+	if Config != "" {
+		filePaths = parsers.ParseConfig(Config)
+	}
 }

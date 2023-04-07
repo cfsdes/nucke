@@ -11,12 +11,13 @@ import (
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/utils"
+    "github.com/cfsdes/nucke/internal/parsers"
 )
 
 // Start Proxy
-func StartProxyHandler(vulnArgs []string) {
+func StartProxyHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, vulnArgs)
+		handler(w, r)
 	})
 
     server := &http.Server{
@@ -36,7 +37,7 @@ func StartProxyHandler(vulnArgs []string) {
 }
 
 // Proxy Handler
-func handler(w http.ResponseWriter, r *http.Request, vulnArgs []string) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	// Convert the raw request to base64
 	requestBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
@@ -47,10 +48,16 @@ func handler(w http.ResponseWriter, r *http.Request, vulnArgs []string) {
 
     // Send request to jaeles API server and filter if scope is specified
     if (utils.Scope != "" && regexp.MustCompile(utils.Scope).MatchString(r.URL.String()) || utils.Scope == "") {
+        
+        // If jaeles scan is enabled
         if utils.Jaeles {
-            SendToJaeles(requestBase64, utils.JaelesApi)
+            parsers.SendToJaeles(requestBase64, utils.JaelesApi)
         }
-        ScannerHandler(r, vulnArgs)
+
+        // If config with plugins is provided
+        if utils.Config != "" {
+            ScannerHandler(r)
+        }
 	} 
 
     fowardRequest(w, r)
