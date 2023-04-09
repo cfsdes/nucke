@@ -49,13 +49,13 @@ func ParseConfig(configFile string) (filePaths []string){
 		
 		for _, id := range plugin.Ids {
 			if id == "*" {
-				for _, file := range listFiles(plugin.Path, ".so") {
-					name := file[:len(file)-3]
+				for _, name := range listFiles(plugin.Path, ".so") {
 					if contains(plugin.Exclude, name) {
 						//Skipping excluded ID
 						continue
 					}
-					filePath := filepath.Join(plugin.Path, id, file)
+
+					filePath := filepath.Join(plugin.Path, name, name+".so")
 					filePaths = append(filePaths, filePath)
 				}
 				continue
@@ -94,19 +94,27 @@ func listFiles(dirPath string, ext string) []string {
 		dirPath = filepath.Join(usr.HomeDir, dirPath[2:])
 	}
 
-	files, err := ioutil.ReadDir(dirPath)
+	var result []string
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Printf("Error accessing file %q: %v\n", path, err)
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) == ext {
+			result = append(result, strings.TrimSuffix(filepath.Base(path), ext))
+		}
+		return nil
+	})
+
 	if err != nil {
 		log.Fatalf("Error listing files: %v", err)
 	}
-	var result []string
-	for _, file := range files {
-		if file.IsDir() || filepath.Ext(file.Name()) != ext {
-			continue
-		}
-		result = append(result, file.Name())
-	}
 	return result
 }
+
 
 // Auxiliar function (download GitHub repository and update plugin path)
 func downloadRepository(plugin *Plugin) {
