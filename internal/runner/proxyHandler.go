@@ -47,6 +47,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
+    
+    // Set the Host field of the request URL based on the Host header of the incoming request
+    r.URL.Host = r.Host
 
     // Send request to jaeles API server and filter if scope is specified
     if (utils.Scope != "" && regexp.MustCompile(utils.Scope).MatchString(r.URL.String()) || utils.Scope == "") {
@@ -67,6 +70,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func fowardRequest(w http.ResponseWriter, r *http.Request) {
+    // Add default protocol scheme if missing
+    if r.URL.Scheme == "" {
+        if r.TLS != nil {
+            r.URL.Scheme = "https"
+        } else {
+            r.URL.Scheme = "http"
+        }
+    }
+
     // Forward the request to the destination server
     resp, err := http.DefaultTransport.RoundTrip(r)
     if err != nil {
