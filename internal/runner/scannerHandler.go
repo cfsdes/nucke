@@ -3,14 +3,12 @@ package runner
 import (
 	"net/http"
 	"net/url"
-    "net/http/httputil"
 	"fmt"
 	"os"
     "plugin"
 	"path/filepath"
     "os/user"
     "strings"
-    "bytes"
 
 	"github.com/cfsdes/nucke/internal/utils"
 )
@@ -22,39 +20,10 @@ func ScannerHandler(req *http.Request, w http.ResponseWriter) {
 		fmt.Println(err)
 	}
 
-    // Create New Request based on Original Request
-    newReq := createNewRequest(req, w)
-
 	// Run Config Plugins
 	for _, plugin := range utils.FilePaths {
-		runPlugin(plugin, newReq, client)
+		runPlugin(plugin, req, w, client)
 	}
-}
-
-// Create a new request to forward
-func createNewRequest(r *http.Request, w http.ResponseWriter) *http.Request {
-    // Get request bytes
-	requestBytes, err := httputil.DumpRequest(r, true)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
-	}
-    
-    // Generate new request
-    newReq, err := http.NewRequest(r.Method, r.URL.String(), bytes.NewReader(requestBytes))
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return nil
-    }
-
-    // Copy headers from original request to new request
-    for key, values := range r.Header {
-        for _, value := range values {
-            newReq.Header.Add(key, value)
-        }
-    }
-    
-    return newReq
 }
 
 // Generate HTTP Client with Proxy
@@ -81,7 +50,7 @@ func createHTTPClient() (*http.Client, error) {
 
 
 // Run plugin
-func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
+func runPlugin(scannerPlugin string, req *http.Request, w http.ResponseWriter, client *http.Client) {
 	// Get the current user's home directory
     usr, err := user.Current()
     if err != nil {
@@ -107,7 +76,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
     }
 
     // Call the run() function with a req argument
-	severity, url, summary, found, err := runFunc.(func(*http.Request, *http.Client) (string, string, string, bool, error))(req, client)
+	severity, url, summary, found, err := runFunc.(func(*http.Request, http.ResponseWriter, *http.Client) (string, string, string, bool, error))(req, w, client)
     if err != nil {
         fmt.Println("Error running plugin:", err)
         os.Exit(1)
