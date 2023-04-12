@@ -7,7 +7,7 @@ import (
     "net/http"
     "regexp"
 
-    "github.com/cfsdes/nucke/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 

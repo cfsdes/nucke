@@ -8,7 +8,7 @@ import (
     "strings"
     "regexp"
     
-    "github.com/cfsdes/nucke/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
