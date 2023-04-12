@@ -1,4 +1,4 @@
-package auxiliars
+package fuzzers
 
 import (
 	"net/http"
@@ -6,10 +6,12 @@ import (
     "io/ioutil"
     "bytes"
     "regexp"
+
+    "github.com/cfsdes/nucke/plugins/utils"
 )
 
 func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
-    req := CreateNewRequest(r, w)
+    req := utils.CloneRequest(r, w)
     
     // Extract parameters from URL
     params := req.URL.Query()

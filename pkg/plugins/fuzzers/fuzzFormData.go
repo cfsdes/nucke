@@ -1,4 +1,4 @@
-package auxiliars
+package fuzzers
 
 import (
 	"net/http"
@@ -7,10 +7,12 @@ import (
     "io/ioutil"
     "strings"
     "regexp"
+    
+    "github.com/cfsdes/nucke/plugins/utils"
 )
 
 func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
-    req := CreateNewRequest(r, w)
+    req := utils.CloneRequest(r, w)
     
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {

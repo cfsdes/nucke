@@ -1,4 +1,4 @@
-package auxiliars
+package utils
 
 import (
 	"net/http"
@@ -6,8 +6,12 @@ import (
 )
 
 func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (string, error) {
-    req := CreateNewRequest(r, w)
+    req := CloneRequest(r, w)
 
+    if client == nil {
+        client = &http.Client{}
+    }
+    
     // Send the request
     resp, err := client.Do(req)
     if err != nil {
