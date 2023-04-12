@@ -62,7 +62,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
         // If config with plugins is provided
         // TODO: add concurrency
         if utils.Config != "" {
-            ScannerHandler(r)
+            ScannerHandler(r, w)
         }
 	} 
 

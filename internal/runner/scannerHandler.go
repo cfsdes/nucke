@@ -3,27 +3,58 @@ package runner
 import (
 	"net/http"
 	"net/url"
+    "net/http/httputil"
 	"fmt"
 	"os"
     "plugin"
 	"path/filepath"
     "os/user"
     "strings"
+    "bytes"
 
 	"github.com/cfsdes/nucke/internal/utils"
 )
 
-func ScannerHandler(req *http.Request) {
+func ScannerHandler(req *http.Request, w http.ResponseWriter) {
 	// Create HTTP Client
 	client, err := createHTTPClient()
 	if err != nil {
 		fmt.Println(err)
 	}
 
+    // Create New Request based on Original Request
+    newReq := createNewRequest(req, w)
+
 	// Run Config Plugins
 	for _, plugin := range utils.FilePaths {
-		runPlugin(plugin, req, client)
+		runPlugin(plugin, newReq, client)
 	}
+}
+
+// Create a new request to forward
+func createNewRequest(r *http.Request, w http.ResponseWriter) *http.Request {
+    // Get request bytes
+	requestBytes, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+    
+    // Generate new request
+    newReq, err := http.NewRequest(r.Method, r.URL.String(), bytes.NewReader(requestBytes))
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return nil
+    }
+
+    // Copy headers from original request to new request
+    for key, values := range r.Header {
+        for _, value := range values {
+            newReq.Header.Add(key, value)
+        }
+    }
+    
+    return newReq
 }
 
 // Generate HTTP Client with Proxy
@@ -37,6 +68,7 @@ func createHTTPClient() (*http.Client, error) {
         }
         client = &http.Client{
             Transport: &http.Transport{
+                DisableKeepAlives: true,
                 Proxy: http.ProxyURL(proxyUrl),
             },
         }
