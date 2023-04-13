@@ -26,6 +26,9 @@ type Config struct {
 }
 
 func ParseConfig(configFile string) (filePaths []string){
+	// Initial message
+	color.Magenta("Loading plugins...\n")
+
 	// Read config file
 	yamlFile, err := ioutil.ReadFile(configFile)
 	if err != nil {
@@ -41,8 +44,6 @@ func ParseConfig(configFile string) (filePaths []string){
 
 	// Iterate over plugins and get the file path
 	for _, plugin := range config.Plugins {
-		color.Magenta("Loading plugin %s...\n", plugin.Name)
-
 		if strings.HasPrefix(plugin.Path, "github.com/") {
 			downloadRepository(&plugin)
 		}

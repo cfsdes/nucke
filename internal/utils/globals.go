@@ -2,6 +2,8 @@ package utils
 
 import (
 	"github.com/cfsdes/nucke/internal/parsers"
+	pluginsUtils "github.com/cfsdes/nucke/pkg/plugins/utils"
+
 )
 
 // Flags
@@ -13,6 +15,7 @@ var Proxy string
 var Config string
 var Output string
 var FilePaths []string
+var InteractURL string
 
 // Initiate global variables
 func init() {
@@ -20,5 +23,6 @@ func init() {
 
 	if Config != "" {
 		FilePaths = parsers.ParseConfig(Config)
+		InteractURL = pluginsUtils.StartInteractsh()
 	}
 }
