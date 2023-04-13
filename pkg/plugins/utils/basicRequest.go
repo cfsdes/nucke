@@ -5,6 +5,10 @@ import (
     "io/ioutil"
 )
 
+/**
+* Just reproduce the request provided
+*/
+
 func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (string, error) {
     req := CloneRequest(r, w)
 
