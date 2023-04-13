@@ -11,6 +11,9 @@ import (
 func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, regexList []string) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
+    // Update payloads {{.oob}} to interact url
+    payloads = utils.ReplaceOob(payloads)
+    
     // Get request body, if method is POST
     var body []byte
     if req.Method == http.MethodPost {

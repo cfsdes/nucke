@@ -12,6 +12,9 @@ import (
 
 func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
+
+    // Update payloads {{.oob}} to interact url
+    payloads = utils.ReplaceOob(payloads) 
     
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {

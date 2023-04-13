@@ -13,6 +13,9 @@ import (
 func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
     
+    // Update payloads {{.oob}} to interact url
+    payloads = utils.ReplaceOob(payloads)
+    
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
         return false, "", "", nil

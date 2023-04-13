@@ -12,6 +12,9 @@ import (
 func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
     
+    // Update payloads {{.oob}} to interact url
+    payloads = utils.ReplaceOob(payloads)
+    
     // Extract parameters from URL
     params := req.URL.Query()
 

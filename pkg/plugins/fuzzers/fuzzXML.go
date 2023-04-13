@@ -14,6 +14,9 @@ import (
 func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
+    // Update payloads {{.oob}} to interact url
+    payloads = utils.ReplaceOob(payloads)
+    
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
         return false, "", "", nil
