@@ -4,7 +4,6 @@ import (
 	"net/http"
     "io/ioutil"
     "bytes"
-    "regexp"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
@@ -51,14 +50,12 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             }
 
             // Check if match some regex in the list (case insensitive)
-            for _, regex := range regexList {
-                match, err := regexp.MatchString("(?i)"+regex, string(body))
-                if err != nil {
-                    return false, "", "", err
-                }
-                if match {
-                    return true, header, payload, nil
-                }
+            found, err := utils.MatchString(regexList, string(body))
+            if err != nil {
+                return false, "", "", err
+            }
+            if found {
+                return true, header, payload, nil
             }
         }
     }

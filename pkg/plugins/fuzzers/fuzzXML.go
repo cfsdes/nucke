@@ -52,15 +52,13 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
                 return false, "", "", err
             }
 
-            // Check if response body matches any regex in the list (case insensitive)
-            for _, regex := range regexList {
-                found, err := regexp.MatchString("(?i)"+regex, string(respBody))
-                if err != nil {
-                    return false, "", "", err
-                }
-                if found {
-                    return true, match[1], payload, nil
-                }
+            // Check if match some regex in the list (case insensitive)
+            found, err := utils.MatchString(regexList, string(respBody))
+            if err != nil {
+                return false, "", "", err
+            }
+            if found {
+                return true, match[1], payload, nil
             }
         }
     }

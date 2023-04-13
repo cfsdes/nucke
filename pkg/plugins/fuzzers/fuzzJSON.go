@@ -5,7 +5,6 @@ import (
     "encoding/json"
     "io/ioutil"
     "net/http"
-    "regexp"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
@@ -59,7 +58,12 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
                 return false, "", "", err
             }
 
-            if isRegexMatch(respBody, regexList) {
+            // Check if match some regex in the list (case insensitive)
+            found, err := utils.MatchString(regexList, string(respBody))
+            if err != nil {
+                return false, "", "", err
+            }
+            if found {
                 return true, key, payload, nil
             }
         }
@@ -117,17 +121,4 @@ func createNewRequest(req *http.Request, reqBody *bytes.Reader) (*http.Request, 
     return newReq, nil
 }
 
-// Check if response match regex
-func isRegexMatch(respBody []byte, regexList []string) bool {
-    for _, regex := range regexList {
-        match, err := regexp.MatchString("(?i)"+regex, string(respBody))
-        if err != nil {
-            return false
-        }
-        if match {
-            return true
-        }
-    }
-    return false
-}
 

@@ -6,7 +6,6 @@ import (
     "net/url"
     "io/ioutil"
     "strings"
-    "regexp"
     
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
@@ -58,15 +57,13 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
                 return false, "", "", err
             }
 
-            // Check if response body matches any regex in the list (case insensitive)
-            for _, regex := range regexList {
-                match, err := regexp.MatchString("(?i)"+regex, string(respBody))
-                if err != nil {
-                    return false, "", "", err
-                }
-                if match {
-                    return true, key, payload, nil
-                }
+            // Check if match some regex in the list (case insensitive)
+            found, err := utils.MatchString(regexList, string(respBody))
+            if err != nil {
+                return false, "", "", err
+            }
+            if found {
+                return true, key, payload, nil
             }
         }
     }
