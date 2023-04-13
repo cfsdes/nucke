@@ -1,23 +1,23 @@
-# Sample
+# Creating plugins
 
-A scanner can be created using the sample file as a starter code.
+A plugin can be created using the sample file as a starter code.
 
-The scanner should return:
+The plugin should return:
 - **severity**: Critical, High, Medium, Low or Info
 - **url**: Vulnerable endpoint identified
 - **summary**: Vulnerability report (it supports markdown)
-- **vulnFound**: Boolean value. If true, the scanner will report the vulnerability
+- **vulnFound**: Boolean value. If true, the plugin will report the vulnerability
 - **error**
 
 The `Run()` function is the function that will be called by the Nucke:
 
 ```go
-func Run(r *http.Request, client *http.Client) (string, string, string, bool, error)
+func Run(r *http.Request, w http.ResponseWriter, client *http.Client, pluginDir string) (string, string, string, bool, error)
 ```
 
-After created, the scanner should be compiled as a plugin:
+After created, the plugin should be compiled using the following command:
 ```bash
-go build -buildmode=plugin -o scanner.so scanner.go
+go build -buildmode=plugin -o plugin.so plugin.go
 ```
 
 ## Report & Directory Structure

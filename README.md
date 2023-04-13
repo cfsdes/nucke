@@ -43,5 +43,6 @@ Access examples/ folder to understand how to create a plugin
 - Add concurrency scans
 - Create server option to load the Markdown reports
 - Adjust regex match to also detect based on response headers
-- Criar fuzzers: fuzzHeaders(), fuzzGraphQL(), fuzzXML
+- Criar fuzzers: fuzzGraphQL(), fuzzXML
 - Documentar utilização dos fuzzers
+- Criar documentação mais bonita ao invés de READMEs
