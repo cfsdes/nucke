@@ -7,11 +7,12 @@ import (
     "regexp"
     "fmt"
     "strings"
+    "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
+func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
     // Update payloads {{.oob}} to interact url
@@ -43,23 +44,18 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             req.Body = ioutil.NopCloser(strings.NewReader(newBody))
 
             // Send request
+            start := time.Now()
             resp, err := client.Do(req)
             if err != nil {
                 return false, "", "", err
             }
             defer resp.Body.Close()
 
-            // Get response body
-            respBody, err := ioutil.ReadAll(resp.Body)
-            if err != nil {
-                return false, "", "", err
-            }
+            // Get response time
+            elapsed := int(time.Since(start).Seconds())
 
-            // Check if match some regex in the list (case insensitive)
-            found, err := utils.MatchString(regexList, string(respBody))
-            if err != nil {
-                return false, "", "", err
-            }
+            // Check if match vulnerability
+            found := utils.MatchChek(matcher, resp, elapsed)
             if found {
                 return true, match[1], payload, nil
             }

@@ -4,11 +4,12 @@ import (
 	"net/http"
     "io/ioutil"
     "bytes"
+    "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, regexList []string) (bool, string, string, error) {
+func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
     // Update payloads {{.oob}} to interact url
@@ -38,6 +39,7 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             }
 
             // Send request
+            start := time.Now()
             resp, err := client.Do(req2)
             if err != nil {
                 // handle error
@@ -45,18 +47,11 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             }
             defer resp.Body.Close()
 
-            // Get response body
-            body, err := ioutil.ReadAll(resp.Body)
-            if err != nil {
-                // handle error
-                return false, "", "", err
-            }
+            // Get response time
+            elapsed := int(time.Since(start).Seconds())
 
-            // Check if match some regex in the list (case insensitive)
-            found, err := utils.MatchString(regexList, string(body))
-            if err != nil {
-                return false, "", "", err
-            }
+            // Check if match vulnerability
+            found := utils.MatchChek(matcher, resp, elapsed)
             if found {
                 return true, header, payload, nil
             }

@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"fmt"
     "net/url"
-    "io/ioutil"
     "strings"
+    "time"
     
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
+func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
     // Update payloads {{.oob}} to interact url
@@ -48,23 +48,18 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             newReq.Header = req.Header
 
             // Send request
+            start := time.Now()
             resp, err := client.Do(newReq)
             if err != nil {
                 return false, "", "", err
             }
             defer resp.Body.Close()
 
-            // Get response body
-            respBody, err := ioutil.ReadAll(resp.Body)
-            if err != nil {
-                return false, "", "", err
-            }
+            // Get response time
+            elapsed := int(time.Since(start).Seconds())
 
-            // Check if match some regex in the list (case insensitive)
-            found, err := utils.MatchString(regexList, string(respBody))
-            if err != nil {
-                return false, "", "", err
-            }
+            // Check if match vulnerability
+            found := utils.MatchChek(matcher, resp, elapsed)
             if found {
                 return true, key, payload, nil
             }

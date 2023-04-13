@@ -5,11 +5,12 @@ import (
     "net/url"
     "io/ioutil"
     "bytes"
+    "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, regexList []string) (bool, string, string, error) {
+func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
     
     // Update payloads {{.oob}} to interact url
@@ -49,6 +50,7 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             }
 
             // Send request
+            start := time.Now()
             resp, err := client.Do(req)
             if err != nil {
                 // handle error
@@ -56,18 +58,11 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             }
             defer resp.Body.Close()
 
-            // Get response body
-            body, err := ioutil.ReadAll(resp.Body)
-            if err != nil {
-                // handle error
-                return false, "", "", err
-            }
+            // Get response time
+            elapsed := int(time.Since(start).Seconds())
 
-            // Check if match some regex in the list (case insensitive)
-            found, err := utils.MatchString(regexList, string(body))
-            if err != nil {
-                return false, "", "", err
-            }
+            // Check if match vulnerability
+            found := utils.MatchChek(matcher, resp, elapsed)
             if found {
                 return true, key, payload, nil
             }
