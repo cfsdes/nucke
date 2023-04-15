@@ -7,6 +7,10 @@ import (
 
 
 func main() {
+    // Check binaries
+    binaries := []string{"interactsh-client"}
+    utils.CheckBinaries(binaries)
+
     // Initial banner
     utils.Banner()
 
