@@ -10,13 +10,14 @@ import (
     "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
     // Update payloads {{.oob}} to interact url
-    payloads = utils.ReplaceOob(payloads)
+    payloads = internalUtils.ReplaceOob(payloads)
     
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
@@ -54,8 +55,11 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             // Get response time
             elapsed := int(time.Since(start).Seconds())
 
+            // Extract OOB ID
+            oobID := internalUtils.ExtractOobID(payload)
+
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed)
+            found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
                 return true, match[1], payload, nil
             }

@@ -8,6 +8,7 @@ import (
     "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 
@@ -15,7 +16,7 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
     req := utils.CloneRequest(r, w)
     
     // Update payloads {{.oob}} to interact url
-    payloads = utils.ReplaceOob(payloads)
+    payloads = internalUtils.ReplaceOob(payloads)
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
@@ -61,8 +62,11 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             // Get response time
             elapsed := int(time.Since(start).Seconds())
 
+            // Extract OOB ID
+            oobID := internalUtils.ExtractOobID(payload)
+
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed)
+            found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
                 return true, key, payload, nil
             }

@@ -1,4 +1,4 @@
-package runner
+package utils
 
 import (
 	"fmt"
@@ -8,10 +8,11 @@ import (
 	"net/url"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
+	"os/user"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/cfsdes/nucke/internal/utils"
 )
 
 func VulnerabilityOutput(scanName string, severity string, url string, summary string) {
@@ -37,7 +38,7 @@ func VulnerabilityOutput(scanName string, severity string, url string, summary s
 	}
 
 	// Create output
-	if utils.Output != "" {
+	if Output != "" {
 		outputPath := getOutputPath(url, scanName)
 
 		err := writeStringToFile(summary, outputPath)
@@ -47,6 +48,20 @@ func VulnerabilityOutput(scanName string, severity string, url string, summary s
 	}
 }
 
+// Format output
+func FormatOutput(output string) string {
+	// Get the current user's home directory
+    usr, err := user.Current()
+    if err != nil {
+        fmt.Println("Error getting current user:", err)
+        os.Exit(1)
+    }
+
+    // Replace "~" with the home directory in the plugin path
+    outputPath := strings.Replace(output, "~", usr.HomeDir, 1) // path/to/plugin/plugin.so
+	
+	return outputPath
+}
 
 // Func to generate random string
 func generateRandomString(length int) string {
@@ -81,7 +96,7 @@ func getOutputPath(urlString string, scanName string) string {
 	fileName := scanName + "-" + hashString
 
 	// set output path
-	outputPath := filepath.Join(utils.Output, domain, fileName)
+	outputPath := filepath.Join(Output, domain, fileName)
 	return outputPath
 }
 
@@ -97,3 +112,5 @@ func writeStringToFile(text string, filePath string) error {
 	}
 	return nil
 }
+
+

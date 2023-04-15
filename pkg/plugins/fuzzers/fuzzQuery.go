@@ -8,13 +8,14 @@ import (
     "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
     
     // Update payloads {{.oob}} to interact url
-    payloads = utils.ReplaceOob(payloads)
+    payloads = internalUtils.ReplaceOob(payloads)
     
     // Extract parameters from URL
     params := req.URL.Query()
@@ -61,8 +62,11 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             // Get response time
             elapsed := int(time.Since(start).Seconds())
 
+            // Extract OOB ID
+            oobID := internalUtils.ExtractOobID(payload)
+
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed)
+            found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
                 return true, key, payload, nil
             }

@@ -7,13 +7,14 @@ import (
     "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string, string, error) {
     req := utils.CloneRequest(r, w)
 
     // Update payloads {{.oob}} to interact url
-    payloads = utils.ReplaceOob(payloads)
+    payloads = internalUtils.ReplaceOob(payloads)
     
     // Get request body, if method is POST
     var body []byte
@@ -50,8 +51,11 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             // Get response time
             elapsed := int(time.Since(start).Seconds())
 
+            // Extract OOB ID
+            oobID := internalUtils.ExtractOobID(payload)
+
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed)
+            found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
                 return true, header, payload, nil
             }

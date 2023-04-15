@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"fmt"
 	"net/http"
+
+	internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 // Matcher Structure
@@ -12,6 +14,7 @@ type Matcher struct {
     Time   *TimeMatcher
     Body   *BodyMatcher
     Header *HeaderMatcher
+	OOB    bool
 }
 
 type TimeMatcher struct {
@@ -29,7 +32,7 @@ type HeaderMatcher struct {
 
 
 // Matcher Check main function
-func MatchChek(m Matcher, resp *http.Response, resTime int) (bool) {
+func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string) (bool) {
 
 	foundArray := make([]bool, 0)
 	resBody, resHeaders := parseResponse(resp)
@@ -45,6 +48,10 @@ func MatchChek(m Matcher, resp *http.Response, resTime int) (bool) {
 	}
 	if m.Time != nil {
 		found := matchTime(m.Time.Seconds, m.Time.Operator, resTime)
+		foundArray = append(foundArray, found)
+	}
+	if m.OOB && oobID != "" {
+		found := internalUtils.CheckOobInteraction(oobID)
 		foundArray = append(foundArray, found)
 	}
 

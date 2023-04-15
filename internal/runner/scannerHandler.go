@@ -88,6 +88,6 @@ func runPlugin(scannerPlugin string, req *http.Request, w http.ResponseWriter, c
 		fileExt := filepath.Ext(scannerPlugin)
 		scanName := filepath.Base(scannerPlugin[:len(scannerPlugin)-len(fileExt)])
 		
-		VulnerabilityOutput(scanName, severity, url, summary)
+		utils.VulnerabilityOutput(scanName, severity, url, summary)
 	}
 }

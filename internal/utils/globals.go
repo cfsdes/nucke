@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"github.com/cfsdes/nucke/internal/parsers"
-	pluginsUtils "github.com/cfsdes/nucke/pkg/plugins/utils"
+	"os"
+	"fmt"
 
+	"github.com/cfsdes/nucke/internal/parsers"
 )
 
 // Flags
@@ -23,6 +24,14 @@ func init() {
 
 	if Config != "" {
 		FilePaths = parsers.ParseConfig(Config)
-		InteractURL = pluginsUtils.StartInteractsh()
+		InteractURL = StartInteractsh()
+	}
+
+	if Output != "" {
+		Output = FormatOutput(Output)
+		err := os.MkdirAll(Output, 0755)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
