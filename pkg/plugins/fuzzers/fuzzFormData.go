@@ -11,20 +11,20 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
-    req := utils.CloneRequest(r, w)
+func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, error) {
+    req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads) 
     
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-        return false, "", "", nil
+        return false, "", nil
     }
 
     // Get form data parameters from request body
     if err := req.ParseForm(); err != nil {
-        return false, "", "", err
+        return false, "", err
     }
 
     // Get request body
@@ -42,17 +42,20 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             // Create a new request with the updated form data
             newReq, err := http.NewRequest(req.Method, req.URL.String(), reqBody)
             if err != nil {
-                return false, "", "", err
+                return false, "", err
             }
 
             // Copy headers from original request to new request
             newReq.Header = req.Header
 
+            // Get raw request
+            rawReq := utils.RequestToRaw(newReq)
+
             // Send request
             start := time.Now()
             resp, err := client.Do(newReq)
             if err != nil {
-                return false, "", "", err
+                return false, "", err
             }
             defer resp.Body.Close()
 
@@ -65,11 +68,11 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, key, payload, nil
+                return true, rawReq, nil
             }
         }
     }
 
-    return false, "", "", nil
+    return false, "", nil
 }
 

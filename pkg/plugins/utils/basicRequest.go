@@ -11,7 +11,7 @@ import (
 */
 
 func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (int, string, int, map[string][]string, error) {
-    req := CloneRequest(r, w)
+    req := CloneRequest(r)
 
     if client == nil {
         client = &http.Client{}

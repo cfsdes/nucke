@@ -12,27 +12,27 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, error) {
-    req := utils.CloneRequest(r, w)
+func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, error) {
+    req := utils.CloneRequest(r)
     
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
-        return false, "", "", nil
+        return false, "", nil
     }
 
     // Read request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
-        return false, "", "", err
+        return false, "", err
     }
 
     // Create obj based on json data
     jsonData, err := unmarshalJSON(body)
     if err != nil {
-        return false, "", "", err
+        return false, "", err
     }
 
     // Iterate over each json object and add payload to it
@@ -42,20 +42,24 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
 
             newBody, err := json.Marshal(newJsonData)
             if err != nil {
-                return false, "", "", err
+                return false, "", err
             }
 
             reqBody := bytes.NewReader(newBody)
 
             newReq, err := createNewRequest(req, reqBody)
             if err != nil {
-                return false, "", "", err
+                return false, "", err
             }
 
+            // Get raw request
+            rawReq := utils.RequestToRaw(newReq)
+
+            // Make request
             start := time.Now()
             resp, err := client.Do(newReq)
             if err != nil {
-                return false, "", "", err
+                return false, "", err
             }
             defer resp.Body.Close()
 
@@ -68,12 +72,12 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, key, payload, nil
+                return true, rawReq, nil
             }
         }
     }
 
-    return false, "", "", nil
+    return false, "", nil
 }
 
 

@@ -10,8 +10,8 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string, string, error) {
-    req := utils.CloneRequest(r, w)
+func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string, error) {
+    req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
@@ -23,7 +23,7 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
         body, err = ioutil.ReadAll(req.Body)
         if err != nil {
             // handle error
-            return false, "", "", err
+            return false, "", err
         }
     }
 
@@ -31,7 +31,7 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
     for _, header := range headers {
         // Create a new request with the header replaced by a payload
         for _, payload := range payloads {
-            req2 := utils.CloneRequest(req, w)
+            req2 := utils.CloneRequest(req)
             req2.Header.Set(header, payload)
 
             // Add request body, if method is POST
@@ -39,12 +39,15 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
                 req2.Body = ioutil.NopCloser(bytes.NewReader(body))
             }
 
+            // Get raw request
+            rawReq := utils.RequestToRaw(req2)
+
             // Send request
             start := time.Now()
             resp, err := client.Do(req2)
             if err != nil {
                 // handle error
-                return false, "", "", err
+                return false, "", err
             }
             defer resp.Body.Close()
 
@@ -57,12 +60,12 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, header, payload, nil
+                return true, rawReq, nil
             }
         }
     }
 
-    return false, "", "", nil
+    return false, "", nil
 }
 
 

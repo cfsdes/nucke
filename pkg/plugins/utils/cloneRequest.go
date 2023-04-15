@@ -14,7 +14,7 @@ import (
 */
 
 // Create a new request to forward
-func CloneRequest(req *http.Request, w http.ResponseWriter) *http.Request {
+func CloneRequest(req *http.Request) *http.Request {
 	// Create a new request based on the original one
     // but with an empty body
     body := []byte{}
