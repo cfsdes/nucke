@@ -45,4 +45,3 @@ Access examples/ folder to understand how to create a plugin
 - Criar fuzzers: fuzzGraphQL()
 - Documentar utilização dos fuzzers
 - Criar documentação mais bonita ao invés de READMEs
-- Atualizar os fuzzers para retornar a raw request
