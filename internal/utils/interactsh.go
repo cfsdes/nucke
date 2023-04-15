@@ -101,8 +101,13 @@ func ExtractOobID(url string) string {
 
 // Function to check interactsh interaction
 func CheckOobInteraction(oobID string) bool {
+    
     // Output path
-    outputPath := Output + "/oob-interactions.txt"
+    outputPath := "/tmp/oob-interactions.txt"
+    if Output != "" {
+        outputPath = Output + "/oob-interactions.txt"
+    }
+    
 
     // Open output file in append mode or create new file
     file, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
