@@ -122,7 +122,7 @@ func CheckOobInteraction(oobID string) bool {
         os.Exit(1)
     }
 
-    // Wait for 5 seconds before interrupting the interactsh process
+    // Wait for 15 seconds before interrupting the interactsh process
     time.Sleep(15 * time.Second)
 
     if err := cmd.Process.Signal(os.Interrupt); err != nil {
