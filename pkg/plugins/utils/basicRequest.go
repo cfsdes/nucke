@@ -4,13 +4,14 @@ import (
 	"net/http"
     "io/ioutil"
     "time"
+    "fmt"
 )
 
 /**
 * Just reproduce the request provided
 */
 
-func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (int, string, int, map[string][]string, error) {
+func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (int, string, int, map[string][]string) {
     req := CloneRequest(r)
 
     if client == nil {
@@ -21,14 +22,16 @@ func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (
     start := time.Now()
     resp, err := client.Do(req)
     if err != nil {
-        return 0, "", 0, nil, err
+        fmt.Println(err)
+        return 0, "", 0, nil
     }
     defer resp.Body.Close()
 
     // Read the response body
     responseBody, err := ioutil.ReadAll(resp.Body)
     if err != nil {
-        return 0, "", 0, nil, err
+        fmt.Println(err)
+        return 0, "", 0, nil
     }
 
     // Get response time
@@ -40,5 +43,5 @@ func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (
         responseHeaders[k] = v
     }
 
-    return elapsed, string(responseBody), resp.StatusCode, responseHeaders, nil
+    return elapsed, string(responseBody), resp.StatusCode, responseHeaders
 }

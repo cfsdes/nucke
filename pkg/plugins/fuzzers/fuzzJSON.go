@@ -13,7 +13,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string) {
+func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
     req := utils.CloneRequest(r)
     
     // Update payloads {{.oob}} to interact url
@@ -21,21 +21,21 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
-        return false, ""
+        return false, "", ""
     }
 
     // Read request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
         fmt.Println(err)
-        return false, ""
+        return false, "", ""
     }
 
     // Create obj based on json data
     jsonData, err := unmarshalJSON(body)
     if err != nil {
         fmt.Println(err)
-        return false, ""
+        return false, "", ""
     }
 
     // Iterate over each json object and add payload to it
@@ -46,7 +46,7 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             newBody, err := json.Marshal(newJsonData)
             if err != nil {
                 fmt.Println(err)
-                return false, ""
+                return false, "", ""
             }
 
             reqBody := bytes.NewReader(newBody)
@@ -54,7 +54,7 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             newReq, err := createNewRequest(req, reqBody)
             if err != nil {
                 fmt.Println(err)
-                return false, ""
+                return false, "", ""
             }
 
             // Get raw request
@@ -65,7 +65,7 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             resp, err := client.Do(newReq)
             if err != nil {
                 fmt.Println(err)
-                return false, ""
+                return false, "", ""
             }
             defer resp.Body.Close()
 
@@ -75,15 +75,18 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             // Extract OOB ID
             oobID := internalUtils.ExtractOobID(payload)
 
+            // Get URL from raw request
+            url := utils.ExtractRawURL(rawReq)
+
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, rawReq
+                return true, rawReq, url
             }
         }
     }
 
-    return false, ""
+    return false, "", ""
 }
 
 
