@@ -13,7 +13,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, error) {
+func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string) {
     req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
@@ -21,13 +21,14 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
     
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
-        return false, "", nil
+        return false, ""
     }
 
     // Get request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
-        return false, "", err
+        fmt.Println(err)
+        return false, ""
     }
 
     // Restore request body
@@ -51,7 +52,8 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             start := time.Now()
             resp, err := client.Do(req)
             if err != nil {
-                return false, "", err
+                fmt.Println(err)
+                return false, ""
             }
             defer resp.Body.Close()
 
@@ -64,12 +66,12 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, rawReq, nil
+                return true, rawReq
             }
         }
     }
 
-    return false, "", nil
+    return false, ""
 }
 
 

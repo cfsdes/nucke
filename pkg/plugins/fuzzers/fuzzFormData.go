@@ -11,7 +11,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, error) {
+func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string) {
     req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
@@ -19,12 +19,13 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
     
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-        return false, "", nil
+        return false, ""
     }
 
     // Get form data parameters from request body
     if err := req.ParseForm(); err != nil {
-        return false, "", err
+        fmt.Println(err)
+        return false, "" 
     }
 
     // Get request body
@@ -42,7 +43,8 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             // Create a new request with the updated form data
             newReq, err := http.NewRequest(req.Method, req.URL.String(), reqBody)
             if err != nil {
-                return false, "", err
+                fmt.Println(err)
+                return false, ""
             }
 
             // Copy headers from original request to new request
@@ -55,7 +57,8 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             start := time.Now()
             resp, err := client.Do(newReq)
             if err != nil {
-                return false, "", err
+                fmt.Println(err)
+                return false, ""
             }
             defer resp.Body.Close()
 
@@ -68,11 +71,11 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, rawReq, nil
+                return true, rawReq
             }
         }
     }
 
-    return false, "", nil
+    return false, ""
 }
 

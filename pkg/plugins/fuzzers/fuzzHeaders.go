@@ -5,12 +5,13 @@ import (
     "io/ioutil"
     "bytes"
     "time"
+    "fmt"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string, error) {
+func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string) {
     req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
@@ -23,7 +24,8 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
         body, err = ioutil.ReadAll(req.Body)
         if err != nil {
             // handle error
-            return false, "", err
+            fmt.Println(err)
+            return false, ""
         }
     }
 
@@ -47,7 +49,8 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             resp, err := client.Do(req2)
             if err != nil {
                 // handle error
-                return false, "", err
+                fmt.Println(err)
+                return false, ""
             }
             defer resp.Body.Close()
 
@@ -60,12 +63,12 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, rawReq, nil
+                return true, rawReq
             }
         }
     }
 
-    return false, "", nil
+    return false, ""
 }
 
 

@@ -6,12 +6,13 @@ import (
     "io/ioutil"
     "bytes"
     "time"
+    "fmt"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, error) {
+func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string) {
     req := utils.CloneRequest(r)
     
     // Update payloads {{.oob}} to interact url
@@ -27,7 +28,8 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
         body, err = ioutil.ReadAll(req.Body)
         if err != nil {
             // handle error
-            return false, "", err
+            fmt.Println(err)
+            return false, ""
         }
     }
 
@@ -58,7 +60,8 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             resp, err := client.Do(req)
             if err != nil {
                 // handle error
-                return false, "", err
+                fmt.Println(err)
+                return false, ""
             }
             defer resp.Body.Close()
 
@@ -71,10 +74,11 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                return true, rawReq, nil
+                fmt.Println(err)
+                return true, rawReq
             }
         }
     }
 
-    return false, "", nil
+    return false, ""
 }
