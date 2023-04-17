@@ -12,6 +12,7 @@ import (
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/utils"
     "github.com/cfsdes/nucke/internal/parsers"
+    pluginsUtils "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 // Create a channel with a buffer of threads
@@ -64,13 +65,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
         // If config with plugins is provided
         if utils.Config != "" {
-
+            // Clone request before scanning
+            req := pluginsUtils.CloneRequest(r)
+            
             // executa a ScannerHandler dentro de uma goroutine
             go func() {
                 // adiciona 1 ao canal para indicar que está utilizando uma goroutine
                 ch <- 1
 
-                ScannerHandler(r, w)
+                ScannerHandler(req, w)
 
                 // sinaliza ao canal que a goroutine está livre
                 <-ch
