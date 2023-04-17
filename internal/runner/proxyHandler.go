@@ -14,6 +14,9 @@ import (
     "github.com/cfsdes/nucke/internal/parsers"
 )
 
+// Create a channel with a buffer of threads
+var ch = make(chan int, utils.Threads)
+
 // Start Proxy
 func StartProxyHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -60,9 +63,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
         }
 
         // If config with plugins is provided
-        // TODO: add concurrency
         if utils.Config != "" {
-            ScannerHandler(r, w)
+
+            // executa a ScannerHandler dentro de uma goroutine
+            go func() {
+                // adiciona 1 ao canal para indicar que está utilizando uma goroutine
+                ch <- 1
+
+                ScannerHandler(r, w)
+
+                // sinaliza ao canal que a goroutine está livre
+                <-ch
+            }()
         }
 	} 
 

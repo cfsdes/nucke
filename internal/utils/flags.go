@@ -8,8 +8,9 @@ import (
     "github.com/fatih/color"
 )
 
-func ParseFlags() (port int, jcAPI string, jc bool, scope string, proxy string, config string, output string) {
+func ParseFlags() (port int, threads int, jcAPI string, jc bool, scope string, proxy string, config string, output string) {
 	flag.IntVar(&port, "port", 8888, "proxy port to use")
+    flag.IntVar(&threads, "threads", 8, "threads to use during plugin scan")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server")
     flag.BoolVar(&jc, "jc", false, "enable jaeles proxy")
 	flag.StringVar(&scope, "scope", "", "regex for scope")

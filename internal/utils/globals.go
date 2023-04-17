@@ -9,6 +9,7 @@ import (
 
 // Flags
 var Port int
+var Threads int
 var JaelesApi string
 var Jaeles bool
 var Scope string
@@ -20,7 +21,7 @@ var InteractURL string
 
 // Initiate global variables
 func init() {
-	Port, JaelesApi, Jaeles, Scope, Proxy, Config, Output = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output = ParseFlags()
 
 	if Config != "" {
 		FilePaths = parsers.ParseConfig(Config)
