@@ -12,6 +12,7 @@ import (
 // Matcher Structure
 type Matcher struct {
     Time   *TimeMatcher
+	StatusCode *StatusCodeMatcher
     Body   *BodyMatcher
     Header *HeaderMatcher
 	OOB    bool
@@ -20,6 +21,11 @@ type Matcher struct {
 type TimeMatcher struct {
     Operator string
     Seconds  int
+}
+
+type StatusCodeMatcher struct {
+    Operator string
+    Code  int
 }
 
 type BodyMatcher struct {
@@ -35,7 +41,7 @@ type HeaderMatcher struct {
 func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string) (bool) {
 
 	foundArray := make([]bool, 0)
-	resBody, resHeaders := parseResponse(resp)
+	statusCode, resBody, resHeaders := parseResponse(resp)
 
 	// Verifying if all rules matched
 	if m.Body != nil {
@@ -50,25 +56,35 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string) (bool)
 		found := matchTime(m.Time.Seconds, m.Time.Operator, resTime)
 		foundArray = append(foundArray, found)
 	}
+	if m.StatusCode != nil {
+		found := matchStatusCode(m.StatusCode.Code,m.StatusCode.Operator, statusCode)
+		foundArray = append(foundArray, found)
+	}
 	if m.OOB && oobID != "" {
 		found := internalUtils.CheckOobInteraction(oobID)
 		foundArray = append(foundArray, found)
 	}
 
 	// Validate if all matches are true
-	allTrue := true
-    for _, value := range foundArray {
-        if value == false {
-            allTrue = false
-            break
-        }
-    }
+    if len(foundArray) > 0 {
+		allTrue := true
+		for _, value := range foundArray {
+			if value == false {
+				allTrue = false
+				break
+			}
+		}
+		return allTrue
+	}
 
-	return allTrue
+	return false
 }
 
 // Parse response
-func parseResponse(resp *http.Response) (string, map[string][]string) {
+func parseResponse(resp *http.Response) (int, string, map[string][]string) {
+	// Get status code
+    statusCode := resp.StatusCode
+
 	// Get response body
 	responseBody, err := ioutil.ReadAll(resp.Body)
     if err != nil {
@@ -81,7 +97,7 @@ func parseResponse(resp *http.Response) (string, map[string][]string) {
         responseHeaders[k] = v
     }
 
-	return string(responseBody), responseHeaders
+	return statusCode, string(responseBody), responseHeaders
 }
 
 // Check if regexList match with response body
@@ -125,6 +141,20 @@ func matchTime(seconds int, operator string, resTime int) bool {
         return resTime > seconds
     case "==":
         return resTime == seconds
+    default:
+        return false
+    }
+}
+
+// Check if status code match
+func matchStatusCode(statusCode int, operator string, respStatusCode int) bool {
+    switch operator {
+    case "<":
+        return respStatusCode < statusCode
+    case ">":
+        return respStatusCode > statusCode
+    case "==":
+        return respStatusCode == statusCode
     default:
         return false
     }
