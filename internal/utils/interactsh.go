@@ -41,11 +41,6 @@ func StartInteractsh() string {
 	// Wait for 5 seconds before interrupt the interactsh process
     time.Sleep(5 * time.Second)
 
-    if err := cmd.Process.Signal(os.Interrupt); err != nil {
-        fmt.Println("Error to interrupt interactsh process:", err)
-        os.Exit(1)
-    }
-
 	// Read the interactsh initial output
     file, err = os.Open(interactOutput)
     if err != nil {
@@ -101,42 +96,9 @@ func ExtractOobID(url string) string {
 
 // Function to check interactsh interaction
 func CheckOobInteraction(oobID string) bool {
-    
-    // Output path
-    outputPath := "/tmp/oob-interactions.txt"
-    if Output != "" {
-        outputPath = Output + "/oob-interactions.txt"
-    }
-    
-
-    // Open output file in append mode or create new file
-    file, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
-    if err != nil {
-        fmt.Println("Error opening output file:", err)
-        os.Exit(1)
-    }
-    defer file.Close()
-
-    // Start interactsh client and save session file
-    cmd := exec.Command("interactsh-client", "-sf", interactSession)
-    cmd.Stdout = file
-
-    err = cmd.Start()
-    if err != nil {
-        fmt.Println("Error executing interactsh command:", err)
-        os.Exit(1)
-    }
-
-    // Wait for 15 seconds before interrupting the interactsh process
-    time.Sleep(15 * time.Second)
-
-    if err := cmd.Process.Signal(os.Interrupt); err != nil {
-        fmt.Println("Error to interrupt interactsh process:", err)
-        os.Exit(1)
-    }
 
     // Read the interactsh output
-    file, err = os.Open(outputPath)
+    file, err := os.Open(interactOutput)
     if err != nil {
         fmt.Println("Error opening file:", err)
         os.Exit(1)
