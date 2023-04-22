@@ -77,7 +77,6 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             // Check if match vulnerability
             found := utils.MatchChek(matcher, resp, elapsed, oobID)
             if found {
-                fmt.Println(err)
                 return true, rawReq, url
             }
         }
