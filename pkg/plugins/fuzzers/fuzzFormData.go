@@ -17,6 +17,9 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads) 
     
+    // Result channel
+    resultChan := make(chan utils.Result)
+
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
         return false, "", ""
@@ -60,7 +63,6 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
                 fmt.Println(err)
                 return false, "", ""
             }
-            defer resp.Body.Close()
 
             // Get response time
             elapsed := int(time.Since(start).Seconds())
@@ -68,14 +70,16 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             // Extract OOB ID
             oobID := internalUtils.ExtractOobID(payload)
 
-            // Get URL from raw request
-            url := utils.ExtractRawURL(rawReq)
-
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed, oobID)
-            if found {
-                return true, rawReq, url
-            }
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+        }
+    }
+
+    // Wait for any goroutine to send a result to the channel
+    for i := 0; i < len(req.PostForm)*len(payloads); i++ {
+        res := <-resultChan
+        if res.Found {
+            return true, res.RawReq, res.URL
         }
     }
 

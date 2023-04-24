@@ -15,6 +15,9 @@ import (
 
 func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
     req := utils.CloneRequest(r)
+
+    // Result channel
+    resultChan := make(chan utils.Result)
     
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
@@ -67,7 +70,6 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
                 fmt.Println(err)
                 return false, "", ""
             }
-            defer resp.Body.Close()
 
             // Get response time
             elapsed := int(time.Since(start).Seconds())
@@ -75,14 +77,16 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
             // Extract OOB ID
             oobID := internalUtils.ExtractOobID(payload)
 
-            // Get URL from raw request
-            url := utils.ExtractRawURL(rawReq)
-
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed, oobID)
-            if found {
-                return true, rawReq, url
-            }
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+        }
+    }
+
+    // Wait for any goroutine to send a result to the channel
+    for i := 0; i < len(jsonData)*len(payloads); i++ {
+        res := <-resultChan
+        if res.Found {
+            return true, res.RawReq, res.URL
         }
     }
 

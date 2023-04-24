@@ -21,6 +21,9 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
     // Extract parameters from URL
     params := req.URL.Query()
 
+    // Result channel
+    resultChan := make(chan utils.Result)
+
     // Get request body, if method is POST
     var body []byte
     if req.Method == http.MethodPost {
@@ -45,40 +48,44 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
                     newParams.Set(k, v[0])
                 }
             }
-            req.URL.RawQuery = newParams.Encode()
+
+            // Copy Request
+            reqCopy := utils.CloneRequest(req)
+            reqCopy.URL.RawQuery = newParams.Encode()
 
             // Add request body, if method is POST
-            if req.Method == http.MethodPost {
-                req.Body = ioutil.NopCloser(bytes.NewReader(body))
+            if reqCopy.Method == http.MethodPost {
+                reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
             }
 
             // Get raw request
-            rawReq := utils.RequestToRaw(req)
+            rawReq := utils.RequestToRaw(reqCopy)
 
             // Send request
             start := time.Now()
-            resp, err := client.Do(req)
+            resp, err := client.Do(reqCopy)
             if err != nil {
                 // handle error
                 fmt.Println(err)
                 return false, "", ""
             }
-            defer resp.Body.Close()
-
+            
             // Get response time
             elapsed := int(time.Since(start).Seconds())
 
             // Extract OOB ID
             oobID := internalUtils.ExtractOobID(payload)
 
-            // Get URL from raw request
-            url := utils.ExtractRawURL(rawReq)
-
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed, oobID)
-            if found {
-                return true, rawReq, url
-            }
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+        }
+    }
+
+    // Wait for any goroutine to send a result to the channel
+    for i := 0; i < len(params)*len(payloads); i++ {
+        res := <-resultChan
+        if res.Found {
+            return true, res.RawReq, res.URL
         }
     }
 

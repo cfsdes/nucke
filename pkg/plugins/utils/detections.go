@@ -36,9 +36,17 @@ type HeaderMatcher struct {
     RegexList []string
 }
 
+// Result structure
+type Result struct {
+	Found bool
+	RawReq string
+	URL string
+}
 
 // Matcher Check main function
-func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string) (bool) {
+func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, resultChan chan Result) {
+	// Get URL from raw request
+	url := ExtractRawURL(rawReq)
 
 	foundArray := make([]bool, 0)
 	statusCode, resBody, resHeaders := parseResponse(resp)
@@ -74,10 +82,10 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string) (bool)
 				break
 			}
 		}
-		return allTrue
+		resultChan <- Result{allTrue, rawReq, url}
 	}
 
-	return false
+	resultChan <- Result{false, "", ""}
 }
 
 // Parse response
@@ -88,8 +96,9 @@ func parseResponse(resp *http.Response) (int, string, map[string][]string) {
 	// Get response body
 	responseBody, err := ioutil.ReadAll(resp.Body)
     if err != nil {
-        fmt.Println("Match parser error: %v", err)
+        fmt.Println("Match parser error: ", err)
     }
+	defer resp.Body.Close()
 
 	// Get response headers
     responseHeaders := make(map[string][]string)

@@ -16,6 +16,9 @@ import (
 func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
     req := utils.CloneRequest(r)
 
+    // Result channel
+    resultChan := make(chan utils.Result)
+
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
     
@@ -39,23 +42,25 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
     matches := re.FindAllStringSubmatch(string(body), -1)
     for _, match := range matches {
         for _, payload := range payloads {
+            // Copy Request
+            reqCopy := utils.CloneRequest(req)
+
             // Create a new request body with the tag replaced by a payload
             newBody := strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], payload, match[3]), -1)
 
             // Set request body
-            req.Body = ioutil.NopCloser(strings.NewReader(newBody))
+            reqCopy.Body = ioutil.NopCloser(strings.NewReader(newBody))
 
             // Get raw request
-            rawReq := utils.RequestToRaw(req)
+            rawReq := utils.RequestToRaw(reqCopy)
 
             // Send request
             start := time.Now()
-            resp, err := client.Do(req)
+            resp, err := client.Do(reqCopy)
             if err != nil {
                 fmt.Println(err)
                 return false, "", ""
             }
-            defer resp.Body.Close()
 
             // Get response time
             elapsed := int(time.Since(start).Seconds())
@@ -63,14 +68,16 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             // Extract OOB ID
             oobID := internalUtils.ExtractOobID(payload)
 
-            // Get URL from raw request
-            url := utils.ExtractRawURL(rawReq)
-
             // Check if match vulnerability
-            found := utils.MatchChek(matcher, resp, elapsed, oobID)
-            if found {
-                return true, rawReq, url
-            }
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+        }
+    }
+
+    // Wait for any goroutine to send a result to the channel
+    for i := 0; i < len(matches)*len(payloads); i++ {
+        res := <-resultChan
+        if res.Found {
+            return true, res.RawReq, res.URL
         }
     }
 
