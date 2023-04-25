@@ -41,44 +41,11 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
         return false, "", ""
     }
 
-    // Iterate over each json object and add payload to it
-    for key := range jsonData {
+    for key, value := range jsonData {
         for _, payload := range payloads {
-            newJsonData := createNewJSONData(jsonData, key, payload)
-
-            newBody, err := json.Marshal(newJsonData)
-            if err != nil {
-                fmt.Println(err)
-                return false, "", ""
-            }
-
-            reqBody := bytes.NewReader(newBody)
-
-            newReq, err := createNewRequest(req, reqBody)
-            if err != nil {
-                fmt.Println(err)
-                return false, "", ""
-            }
-
-            // Get raw request
-            rawReq := utils.RequestToRaw(newReq)
-
-            // Make request
-            start := time.Now()
-            resp, err := client.Do(newReq)
-            if err != nil {
-                fmt.Println(err)
-                return false, "", ""
-            }
-
-            // Get response time
-            elapsed := int(time.Since(start).Seconds())
-
-            // Extract OOB ID
-            oobID := internalUtils.ExtractOobID(payload)
-
-            // Check if match vulnerability
-            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+            
+            // Check if value is map. If yes, recursively check it to inject payload
+            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher)
         }
     }
 
@@ -93,6 +60,54 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
     return false, "", ""
 }
 
+// function to add payload to JSON
+func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher) {
+    if innerMap, ok := value.(map[string]interface{}); ok {
+        // Se for um mapa, iterar sobre suas chaves e valores
+        for innerKey, innerValue := range innerMap {
+            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher)
+        }
+    } else {
+        loopScan(jsonData, key, payload, resultChan, req, client, matcher)
+    }
+}
+
+// Scan to send request and check match
+func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher) {
+    // Iterate over each json object and add payload to it
+    newJsonData := createNewJSONData(jsonData, key, payload)
+
+    newBody, err := json.Marshal(newJsonData)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    reqBody := bytes.NewReader(newBody)
+
+    newReq, err := createNewRequest(req, reqBody)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    // Get raw request
+    rawReq := utils.RequestToRaw(newReq)
+
+    // Make request
+    start := time.Now()
+    resp, err := client.Do(newReq)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    // Get response time
+    elapsed := int(time.Since(start).Seconds())
+
+    // Extract OOB ID
+    oobID := internalUtils.ExtractOobID(payload)
+
+    // Check if match vulnerability
+    go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+}
 
 // Convert bytes to JSON
 func unmarshalJSON(body []byte) (map[string]interface{}, error) {
@@ -108,28 +123,19 @@ func createNewJSONData(jsonData map[string]interface{}, key string, payload stri
     for k, v := range jsonData {
         if k == key {
             if m, ok := v.(map[string]interface{}); ok {
-                newJsonData[k] = addPayloadToMap(m, payload)
+                newJsonData[k] = createNewJSONData(m, key, payload)
             } else {
                 newJsonData[k] = payload
             }
         } else {
-            newJsonData[k] = v
+            if m, ok := v.(map[string]interface{}); ok {
+                newJsonData[k] = createNewJSONData(m, key, payload)
+            } else {
+                newJsonData[k] = v
+            }
         }
     }
     return newJsonData
-}
-
-// Add payload to JSON object
-func addPayloadToMap(m map[string]interface{}, payload string) map[string]interface{} {
-    newMap := make(map[string]interface{})
-    for k, v := range m {
-        if m, ok := v.(map[string]interface{}); ok {
-            newMap[k] = addPayloadToMap(m, payload)
-        } else {
-            newMap[k] = payload
-        }
-    }
-    return newMap
 }
 
 // Create new HTTP Request
