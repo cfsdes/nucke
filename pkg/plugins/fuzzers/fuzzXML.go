@@ -13,7 +13,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
+func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Result channel
@@ -46,7 +46,14 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             reqCopy := utils.CloneRequest(req)
 
             // Create a new request body with the tag replaced by a payload
-            newBody := strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], payload, match[3]), -1)
+            var newBody string
+            if keepOriginalKey {
+                newBody = strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], match[2]+payload, match[3]), -1)
+            } else {
+                newBody = strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], payload, match[3]), -1)
+            }
+            
+            
 
             // Set request body
             reqCopy.Body = ioutil.NopCloser(strings.NewReader(newBody))

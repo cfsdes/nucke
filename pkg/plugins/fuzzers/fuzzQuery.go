@@ -12,7 +12,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
+func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
     
     // Update payloads {{.oob}} to interact url
@@ -43,7 +43,11 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             newParams := make(url.Values)
             for k, v := range params {
                 if k == key {
-                    newParams.Set(k, payload)
+                    if keepOriginalKey {
+                        newParams.Set(k, v[0]+payload)
+                    } else {
+                        newParams.Set(k, payload)
+                    }
                 } else {
                     newParams.Set(k, v[0])
                 }

@@ -11,7 +11,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher) (bool, string, string, string, string) {
+func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, headers []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
@@ -37,7 +37,14 @@ func FuzzHeaders(r *http.Request, w http.ResponseWriter, client *http.Client, pa
         // Create a new request with the header replaced by a payload
         for _, payload := range payloads {
             req2 := utils.CloneRequest(req)
-            req2.Header.Set(header, payload)
+
+            if keepOriginalKey {
+                currentValue := req.Header.Get(header)
+                req2.Header.Set(header, currentValue+payload)
+            } else {
+                req2.Header.Set(header, payload)
+            }
+            
 
             // Add request body, if method is POST
             if req2.Method == http.MethodPost {

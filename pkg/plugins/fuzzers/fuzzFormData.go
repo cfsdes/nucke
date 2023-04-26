@@ -11,7 +11,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
+func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
@@ -37,8 +37,16 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
     // For each parameter, send a new request with the parameter replaced by a payload
     for key, values := range req.PostForm {
         for _, payload := range payloads {
+            
             // Create a new request body with the parameter replaced by a payload
-            newBody := strings.Replace(body, fmt.Sprintf("%s=%s", key, url.QueryEscape(values[0])), fmt.Sprintf("%s=%s", key, url.QueryEscape(payload)), -1)
+            var newBody string
+            if keepOriginalKey {
+                newBody = strings.Replace(body, fmt.Sprintf("%s=%s", key, url.QueryEscape(values[0])), fmt.Sprintf("%s=%s", key, url.QueryEscape(values[0]+payload)), -1)
+            } else {
+                newBody = strings.Replace(body, fmt.Sprintf("%s=%s", key, url.QueryEscape(values[0])), fmt.Sprintf("%s=%s", key, url.QueryEscape(payload)), -1)
+            }
+
+            
 
             // Set request body
             reqBody := strings.NewReader(newBody)

@@ -13,7 +13,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
+func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Result channel
@@ -45,7 +45,7 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
         for _, payload := range payloads {
             
             // Check if value is map. If yes, recursively check it to inject payload
-            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher)
+            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher, keepOriginalKey)
         }
     }
 
@@ -61,21 +61,21 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
 }
 
 // function to add payload to JSON
-func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher) {
+func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher, keepOriginalKey bool) {
     if innerMap, ok := value.(map[string]interface{}); ok {
         // Se for um mapa, iterar sobre suas chaves e valores
         for innerKey, innerValue := range innerMap {
-            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher)
+            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher, keepOriginalKey)
         }
     } else {
-        loopScan(jsonData, key, payload, resultChan, req, client, matcher)
+        loopScan(jsonData, key, payload, resultChan, req, client, matcher, keepOriginalKey)
     }
 }
 
 // Scan to send request and check match
-func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher) {
+func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher, keepOriginalKey bool) {
     // Iterate over each json object and add payload to it
-    newJsonData := createNewJSONData(jsonData, key, payload)
+    newJsonData := createNewJSONData(jsonData, key, payload, keepOriginalKey)
 
     newBody, err := json.Marshal(newJsonData)
     if err != nil {
@@ -118,18 +118,23 @@ func unmarshalJSON(body []byte) (map[string]interface{}, error) {
 
 
 // Create new JSON object with payload
-func createNewJSONData(jsonData map[string]interface{}, key string, payload string) map[string]interface{} {
+func createNewJSONData(jsonData map[string]interface{}, key string, payload string, keepOriginalKey bool) map[string]interface{} {
     newJsonData := make(map[string]interface{})
     for k, v := range jsonData {
         if k == key {
             if m, ok := v.(map[string]interface{}); ok {
-                newJsonData[k] = createNewJSONData(m, key, payload)
+                newJsonData[k] = createNewJSONData(m, key, payload, keepOriginalKey)
             } else {
-                newJsonData[k] = payload
+                if keepOriginalKey {
+                    originalValue := fmt.Sprintf("%v", v)
+                    newJsonData[k] = originalValue+payload
+                } else {
+                    newJsonData[k] = payload
+                }
             }
         } else {
             if m, ok := v.(map[string]interface{}); ok {
-                newJsonData[k] = createNewJSONData(m, key, payload)
+                newJsonData[k] = createNewJSONData(m, key, payload, keepOriginalKey)
             } else {
                 newJsonData[k] = v
             }
