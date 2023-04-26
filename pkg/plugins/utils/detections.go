@@ -83,9 +83,9 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq
 			}
 		}
 		resultChan <- Result{allTrue, rawReq, url}
+	} else {
+		resultChan <- Result{false, "", ""}
 	}
-
-	resultChan <- Result{false, "", ""}
 }
 
 // Parse response
