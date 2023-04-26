@@ -9,7 +9,7 @@ import (
 func FileToSlice(pluginDir string, rulesFile string) ([]string) {
 	
     // if rulesFile is empty, use the default name
-	if rulesFile == "nil" {
+	if rulesFile == "" {
 		rulesFile = "regex_match.txt"
 	}
 
