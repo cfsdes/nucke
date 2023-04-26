@@ -16,6 +16,7 @@ type Matcher struct {
     Body   *BodyMatcher
     Header *HeaderMatcher
 	OOB    bool
+	Operator string
 }
 
 type TimeMatcher struct {
@@ -47,7 +48,7 @@ type Result struct {
 func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, resultChan chan Result) {
 	// Get URL from raw request
 	url := ExtractRawURL(rawReq)
-
+	
 	foundArray := make([]bool, 0)
 	statusCode, resBody, resHeaders := parseResponse(resp)
 
@@ -75,14 +76,27 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq
 
 	// Validate if all matches are true
     if len(foundArray) > 0 {
-		allTrue := true
-		for _, value := range foundArray {
-			if value == false {
-				allTrue = false
-				break
+		// AND condition
+		if m.Operator == "" || m.Operator == "AND" {
+			allTrue := true
+			for _, value := range foundArray {
+				if value == false {
+					allTrue = false
+					break
+				}
 			}
+			resultChan <- Result{allTrue, rawReq, url}
+
+		// OR condition
+		} else if m.Operator == "OR" {
+			fmt.Println(foundArray)
+			for _, value := range foundArray {
+				if value {
+					resultChan <- Result{true, rawReq, url}
+				}
+			}
+			resultChan <- Result{false, rawReq, url}
 		}
-		resultChan <- Result{allTrue, rawReq, url}
 	} else {
 		resultChan <- Result{false, "", ""}
 	}
