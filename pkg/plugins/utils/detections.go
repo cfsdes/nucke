@@ -15,6 +15,7 @@ type Matcher struct {
 	StatusCode *StatusCodeMatcher
     Body   *BodyMatcher
     Header *HeaderMatcher
+	ContentLength *ContentLengthMatcher
 	OOB    bool
 	Operator string
 }
@@ -27,6 +28,11 @@ type TimeMatcher struct {
 type StatusCodeMatcher struct {
     Operator string
     Code  int
+}
+
+type ContentLengthMatcher struct {
+	Operator string
+	Length int
 }
 
 type BodyMatcher struct {
@@ -61,12 +67,16 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq
 		found := matchHeader(m.Header.RegexList, resHeaders)
 		foundArray = append(foundArray, found)
 	}
+	if m.ContentLength != nil {
+		found := matchMathOperation(m.ContentLength.Length, m.ContentLength.Operator, len(resBody))
+		foundArray = append(foundArray, found)
+	}
 	if m.Time != nil {
-		found := matchTime(m.Time.Seconds, m.Time.Operator, resTime)
+		found := matchMathOperation(m.Time.Seconds, m.Time.Operator, resTime)
 		foundArray = append(foundArray, found)
 	}
 	if m.StatusCode != nil {
-		found := matchStatusCode(m.StatusCode.Code,m.StatusCode.Operator, statusCode)
+		found := matchMathOperation(m.StatusCode.Code,m.StatusCode.Operator, statusCode)
 		foundArray = append(foundArray, found)
 	}
 	if m.OOB && oobID != "" {
@@ -154,29 +164,15 @@ func matchHeader(regexList []string, responseHeaders map[string][]string) bool {
 	return false
 }
 
-// Check if time match with time rule
-func matchTime(seconds int, operator string, resTime int) bool {
+// Check if number match with operator
+func matchMathOperation(value int, operator string, target int) bool {
     switch operator {
     case "<":
-        return resTime < seconds
+        return target < value
     case ">":
-        return resTime > seconds
+        return target > value
     case "==":
-        return resTime == seconds
-    default:
-        return false
-    }
-}
-
-// Check if status code match
-func matchStatusCode(statusCode int, operator string, respStatusCode int) bool {
-    switch operator {
-    case "<":
-        return respStatusCode < statusCode
-    case ">":
-        return respStatusCode > statusCode
-    case "==":
-        return respStatusCode == statusCode
+        return target == value
     default:
         return false
     }
