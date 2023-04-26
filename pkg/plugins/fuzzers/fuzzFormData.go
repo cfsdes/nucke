@@ -11,7 +11,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
+func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Update payloads {{.oob}} to interact url
@@ -22,13 +22,13 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
 
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-        return false, "", ""
+        return false, "", "", "", ""
     }
 
     // Get form data parameters from request body
     if err := req.ParseForm(); err != nil {
         fmt.Println(err)
-        return false, "", "" 
+        return false, "", "", "", "" 
     }
 
     // Get request body
@@ -47,7 +47,7 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             newReq, err := http.NewRequest(req.Method, req.URL.String(), reqBody)
             if err != nil {
                 fmt.Println(err)
-                return false, "", ""
+                return false, "", "", "", ""
             }
 
             // Copy headers from original request to new request
@@ -61,7 +61,7 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             resp, err := client.Do(newReq)
             if err != nil {
                 fmt.Println(err)
-                return false, "", ""
+                return false, "", "", "", ""
             }
 
             // Get response time
@@ -71,7 +71,7 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
             oobID := internalUtils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
         }
     }
 
@@ -79,10 +79,10 @@ func FuzzFormData(r *http.Request, w http.ResponseWriter, client *http.Client, p
     for i := 0; i < len(req.PostForm)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL
+            return true, res.RawReq, res.URL, res.Payload, res.Param
         }
     }
 
-    return false, "", ""
+    return false, "", "", "", ""
 }
 

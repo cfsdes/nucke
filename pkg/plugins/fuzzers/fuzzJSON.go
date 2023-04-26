@@ -13,7 +13,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
+func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Result channel
@@ -24,21 +24,21 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
-        return false, "", ""
+        return false, "", "", "", ""
     }
 
     // Read request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
         fmt.Println(err)
-        return false, "", ""
+        return false, "", "", "", ""
     }
 
     // Create obj based on json data
     jsonData, err := unmarshalJSON(body)
     if err != nil {
         fmt.Println(err)
-        return false, "", ""
+        return false, "", "", "", ""
     }
 
     for key, value := range jsonData {
@@ -53,11 +53,11 @@ func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, paylo
     for i := 0; i < len(jsonData)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL
+            return true, res.RawReq, res.URL, res.Payload, res.Param
         }
     }
 
-    return false, "", ""
+    return false, "", "", "", ""
 }
 
 // function to add payload to JSON
@@ -106,7 +106,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     oobID := internalUtils.ExtractOobID(payload)
 
     // Check if match vulnerability
-    go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+    go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
 }
 
 // Convert bytes to JSON

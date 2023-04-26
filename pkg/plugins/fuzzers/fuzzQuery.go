@@ -12,7 +12,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
+func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
     
     // Update payloads {{.oob}} to interact url
@@ -32,7 +32,7 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
         if err != nil {
             // handle error
             fmt.Println(err)
-            return false, "", ""
+            return false, "", "", "", ""
         }
     }
 
@@ -67,7 +67,7 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             if err != nil {
                 // handle error
                 fmt.Println(err)
-                return false, "", ""
+                return false, "", "", "", ""
             }
             
             // Get response time
@@ -77,7 +77,7 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
             oobID := internalUtils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
         }
     }
 
@@ -85,9 +85,9 @@ func FuzzQuery(r *http.Request, w http.ResponseWriter, client *http.Client, payl
     for i := 0; i < len(params)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL
+            return true, res.RawReq, res.URL, res.Payload, res.Param
         }
     }
 
-    return false, "", ""
+    return false, "", "", "", ""
 }

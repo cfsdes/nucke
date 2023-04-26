@@ -13,7 +13,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string) {
+func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Result channel
@@ -24,14 +24,14 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
     
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
-        return false, "", ""
+        return false, "", "", "", ""
     }
 
     // Get request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
         fmt.Println(err)
-        return false, "", ""
+        return false, "", "", "", ""
     }
 
     // Restore request body
@@ -59,7 +59,7 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             resp, err := client.Do(reqCopy)
             if err != nil {
                 fmt.Println(err)
-                return false, "", ""
+                return false, "", "", "", ""
             }
 
             // Get response time
@@ -69,7 +69,7 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
             oobID := internalUtils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, resultChan)
+            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, match[0], resultChan)
         }
     }
 
@@ -77,11 +77,11 @@ func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloa
     for i := 0; i < len(matches)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL
+            return true, res.RawReq, res.URL, res.Payload, res.Param
         }
     }
 
-    return false, "", ""
+    return false, "", "", "", ""
 }
 
 

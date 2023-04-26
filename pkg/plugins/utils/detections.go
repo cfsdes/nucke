@@ -48,10 +48,12 @@ type Result struct {
 	Found bool
 	RawReq string
 	URL string
+	Payload string
+	Param string
 }
 
 // Matcher Check main function
-func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, resultChan chan Result) {
+func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string, resultChan chan Result) {
 	// Get URL from raw request
 	url := ExtractRawURL(rawReq)
 	
@@ -95,19 +97,19 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq
 					break
 				}
 			}
-			resultChan <- Result{allTrue, rawReq, url}
+			resultChan <- Result{allTrue, rawReq, url, payload, parameter}
 
 		// OR condition
 		} else if m.Operator == "OR" {
 			for _, value := range foundArray {
 				if value {
-					resultChan <- Result{true, rawReq, url}
+					resultChan <- Result{true, rawReq, url, payload, parameter}
 				}
 			}
-			resultChan <- Result{false, rawReq, url}
+			resultChan <- Result{false, rawReq, url, payload, parameter}
 		}
 	} else {
-		resultChan <- Result{false, "", ""}
+		resultChan <- Result{false, "", "", "", ""}
 	}
 }
 
