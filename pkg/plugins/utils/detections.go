@@ -89,7 +89,6 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq
 
 		// OR condition
 		} else if m.Operator == "OR" {
-			fmt.Println(foundArray)
 			for _, value := range foundArray {
 				if value {
 					resultChan <- Result{true, rawReq, url}
