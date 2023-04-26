@@ -175,6 +175,12 @@ func matchMathOperation(value int, operator string, target int) bool {
         return target > value
     case "==":
         return target == value
+	case "!=":
+		return target != value
+	case "<=":
+		return target <= value
+	case ">=":
+		return target >= value
     default:
         return false
     }
