@@ -50,14 +50,14 @@ func ParseConfig(configFile string) (filePaths []string){
 		
 		for _, id := range plugin.Ids {
 			if id == "*" {
-				for _, name := range listFiles(plugin.Path, ".go") {
+				for _, path := range listFiles(plugin.Path, ".go") {
+					name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 					if contains(plugin.Exclude, name) {
 						//Skipping excluded ID
 						continue
 					}
 
-					filePath := filepath.Join(plugin.Path, name, name+".go")
-					filePaths = append(filePaths, filePath)
+					filePaths = append(filePaths, path)
 				}
 				continue
 			}
@@ -67,8 +67,16 @@ func ParseConfig(configFile string) (filePaths []string){
 				continue
 			}
 
-			filePath := filepath.Join(plugin.Path, id, id+".go")
-			filePaths = append(filePaths, filePath)
+			if id != "*" {
+				for _, path := range listFiles(plugin.Path, ".go") {
+					name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+					if name == id {
+						filePaths = append(filePaths, path)
+						continue
+					}
+				}
+				continue
+			}
 		}
 	}
 
@@ -105,7 +113,7 @@ func listFiles(dirPath string, ext string) []string {
 			return nil
 		}
 		if filepath.Ext(path) == ext {
-			result = append(result, strings.TrimSuffix(filepath.Base(path), ext))
+			result = append(result, path)
 		}
 		return nil
 	})
