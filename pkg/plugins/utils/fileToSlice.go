@@ -7,11 +7,6 @@ import (
 
 // Read file and return a slice
 func FileToSlice(pluginDir string, rulesFile string) ([]string) {
-	
-    // if rulesFile is empty, use the default name
-	if rulesFile == "" {
-		rulesFile = "regex_match.txt"
-	}
 
     // Open the file for reading
     file, err := os.Open(pluginDir + "/" + rulesFile)
