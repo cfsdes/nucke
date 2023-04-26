@@ -97,6 +97,9 @@ func ExtractOobID(url string) string {
 // Function to check interactsh interaction
 func CheckOobInteraction(oobID string) bool {
 
+    // Wait some seconds before analyze
+    time.Sleep(15 * time.Second)
+
     // Read the interactsh output
     file, err := os.Open(interactOutput)
     if err != nil {
