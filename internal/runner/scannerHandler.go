@@ -60,7 +60,7 @@ func runPlugin(scannerPlugin string, req *http.Request, w http.ResponseWriter, c
 
     // Replace "~" with the home directory in the plugin path
     pluginPath := strings.Replace(scannerPlugin, "~", usr.HomeDir, 1) // path/to/plugin/plugin.so
-    //pluginDir := filepath.Dir(pluginPath)   // path/to/plugin
+    pluginDir := filepath.Dir(pluginPath)   // path/to/plugin
 
     // Load the plugin file
     plug, err := plugin.Open(pluginPath)
@@ -76,12 +76,13 @@ func runPlugin(scannerPlugin string, req *http.Request, w http.ResponseWriter, c
         os.Exit(1)
     }
 
-    // Get file extension and plugin name
-    fileExt := filepath.Ext(scannerPlugin) // .so
-	scanName := filepath.Base(scannerPlugin[:len(scannerPlugin)-len(fileExt)]) // e.g: sqli
+    // Get plugin name (without extension and "." in the start of the name)
+    scanName := filepath.Base(pluginDir)
+    scanName = strings.TrimSuffix(scanName, filepath.Ext(scanName))
+    scanName = strings.TrimPrefix(scanName, ".") // e.g: sqli
 
     // Call the run() function with a req argument
-	severity, url, summary, found, err := runFunc.(func(*http.Request, http.ResponseWriter, *http.Client, string) (string, string, string, bool, error))(req, w, client, scanName)
+	severity, url, summary, found, err := runFunc.(func(*http.Request, http.ResponseWriter, *http.Client, string) (string, string, string, bool, error))(req, w, client, pluginDir)
     if err != nil {
         fmt.Println("Error running plugin:", err)
         os.Exit(1)
