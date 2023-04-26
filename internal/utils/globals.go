@@ -4,27 +4,35 @@ import (
 	"os"
 	"fmt"
 
-	"github.com/cfsdes/nucke/internal/parsers"
+	"github.com/cfsdes/nucke/internal/utils/plugins"
 )
 
 // Flags
-var Port int
-var Threads int
-var JaelesApi string
-var Jaeles bool
-var Scope string
-var Proxy string
-var Config string
-var Output string
-var FilePaths []string
-var InteractURL string
+var Port int 				// Port that nucke will listen
+var Threads int 			// Nucke scan threads
+var JaelesApi string		// Jaeles server API url
+var Jaeles bool				// Jaeles boolean flag
+var Scope string			// Regex to set the scope to be scanned
+var Proxy string			// Proxy to use during scan
+var Config string			// Config.yaml file for plugins
+var Output string			// Output directory for plugins
+var FilePaths []string		// File paths with plugins in golang format
+var PluginPaths []string	// Plugins paths with plugins in .so format
+var InteractURL string		// Interact URL for OOB scan
+var UpdatePlugins bool		// Force the update of all plugins
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins = ParseFlags()
 
 	if Config != "" {
-		FilePaths = parsers.ParseConfig(Config)
+		// Parse Config.yaml
+		FilePaths = plugins.ParseConfig(Config)
+
+		// Build plugins
+		PluginPaths = plugins.BuildPlugins(FilePaths, UpdatePlugins)
+
+		// Start interact.sh
 		InteractURL = StartInteractsh()
 	}
 

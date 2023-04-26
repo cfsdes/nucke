@@ -5,6 +5,9 @@ import (
 	"strings"
 	"text/template"
 	"path/filepath"
+	"fmt"
+
+	"github.com/cfsdes/nucke/internal/utils"
 )
 
 func ParseTemplate(templateString string, data interface{}) (string) {
@@ -20,10 +23,22 @@ func ParseTemplate(templateString string, data interface{}) (string) {
 	return output.String()
 }
 
-func ReadFileToString(report string, pluginDir string) string {
-    absPath := filepath.Join(pluginDir, report)
+func ReadFileToString(report string, pluginName string) string {
+	var reportFilePath string
 
-    content, err := ioutil.ReadFile(absPath)
+	for _, filePath := range utils.FilePaths {
+        fileName := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+        if fileName == pluginName {
+            reportFilePath = filepath.Dir(filePath) + "/" + report
+        }
+    }
+
+	if (reportFilePath == ""){
+		fmt.Println("Error while reading template report. Plugin directory not found")
+		return ""
+	}
+
+    content, err := ioutil.ReadFile(reportFilePath)
     if err != nil {
         panic(err)
     }

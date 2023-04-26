@@ -1,4 +1,4 @@
-package parsers
+package plugins
 
 import (
 	"fmt"
@@ -50,13 +50,13 @@ func ParseConfig(configFile string) (filePaths []string){
 		
 		for _, id := range plugin.Ids {
 			if id == "*" {
-				for _, name := range listFiles(plugin.Path, ".so") {
+				for _, name := range listFiles(plugin.Path, ".go") {
 					if contains(plugin.Exclude, name) {
 						//Skipping excluded ID
 						continue
 					}
 
-					filePath := filepath.Join(plugin.Path, name, name+".so")
+					filePath := filepath.Join(plugin.Path, name, name+".go")
 					filePaths = append(filePaths, filePath)
 				}
 				continue
@@ -67,7 +67,7 @@ func ParseConfig(configFile string) (filePaths []string){
 				continue
 			}
 
-			filePath := filepath.Join(plugin.Path, id, id+".so")
+			filePath := filepath.Join(plugin.Path, id, id+".go")
 			filePaths = append(filePaths, filePath)
 		}
 	}
