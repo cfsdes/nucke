@@ -13,7 +13,7 @@ func BuildPlugins(filePaths []string, updatePlugins bool) ([]string) {
     compileDir := filepath.Join(os.Getenv("HOME"), ".nucke", "compiled-plugins")
     if _, err := os.Stat(compileDir); os.IsNotExist(err) {
         if err := os.MkdirAll(compileDir, 0755); err != nil {
-            panic(fmt.Sprint("Error creating directory %s: %v\n", compileDir, err))
+            panic(fmt.Sprintf("Error creating directory %s: %v\n", compileDir, err))
         }
     }
 
@@ -26,7 +26,7 @@ func BuildPlugins(filePaths []string, updatePlugins bool) ([]string) {
             cmd.Stderr = os.Stderr
             err := cmd.Run()
             if err != nil {
-                panic(fmt.Sprint("Error compiling plugin %s: %v\n", dir, err))
+                panic(fmt.Sprintf("Error compiling plugin %s: %v\n", dir, err))
             }
         }
     }
