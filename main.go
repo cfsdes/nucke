@@ -2,17 +2,17 @@ package main
 
 import (
     "github.com/cfsdes/nucke/internal/runner"
-    "github.com/cfsdes/nucke/internal/utils"
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 
 func main() {
     // Check binaries
     binaries := []string{"interactsh-client"}
-    utils.CheckBinaries(binaries)
+    initializers.CheckBinaries(binaries)
 
     // Initial banner
-    utils.Banner()
+    initializers.Banner()
 
 	// Start Proxy
 	runner.StartProxy()

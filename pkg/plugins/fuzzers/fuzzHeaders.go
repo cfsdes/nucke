@@ -9,14 +9,14 @@ import (
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
-    internalUtils "github.com/cfsdes/nucke/internal/utils"
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Update payloads {{.oob}} to interact url
-    payloads = internalUtils.ReplaceOob(payloads)
+    payloads = initializers.ReplaceOob(payloads)
     
     // Result channel
     resultChan := make(chan detections.Result)
@@ -68,7 +68,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
             elapsed := int(time.Since(start).Seconds())
 
             // Extract OOB ID
-            oobID := internalUtils.ExtractOobID(payload)
+            oobID := initializers.ExtractOobID(payload)
 
             // Check if match vulnerability
             go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, header, resultChan)

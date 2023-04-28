@@ -11,7 +11,7 @@ import (
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
-    internalUtils "github.com/cfsdes/nucke/internal/utils"
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
@@ -21,7 +21,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     resultChan := make(chan detections.Result)
 
     // Update payloads {{.oob}} to interact url
-    payloads = internalUtils.ReplaceOob(payloads)
+    payloads = initializers.ReplaceOob(payloads)
     
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
@@ -74,7 +74,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
             elapsed := int(time.Since(start).Seconds())
 
             // Extract OOB ID
-            oobID := internalUtils.ExtractOobID(payload)
+            oobID := initializers.ExtractOobID(payload)
 
             // Check if match vulnerability
             go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, match[0], resultChan)

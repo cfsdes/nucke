@@ -10,7 +10,7 @@ import (
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
-    internalUtils "github.com/cfsdes/nucke/internal/utils"
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 
@@ -21,7 +21,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     resultChan := make(chan detections.Result)
     
     // Update payloads {{.oob}} to interact url
-    payloads = internalUtils.ReplaceOob(payloads)
+    payloads = initializers.ReplaceOob(payloads)
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
@@ -104,7 +104,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     elapsed := int(time.Since(start).Seconds())
 
     // Extract OOB ID
-    oobID := internalUtils.ExtractOobID(payload)
+    oobID := initializers.ExtractOobID(payload)
 
     // Check if match vulnerability
     go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)

@@ -11,7 +11,7 @@ import (
     "strings"
     "crypto/tls"
 
-	"github.com/cfsdes/nucke/internal/utils"
+	"github.com/cfsdes/nucke/internal/initializers"
 )
 
 func ScannerHandler(req *http.Request) {
@@ -22,7 +22,7 @@ func ScannerHandler(req *http.Request) {
 	}
 
 	// Run Config Plugins
-	for _, plugin := range utils.PluginPaths {
+	for _, plugin := range initializers.PluginPaths {
 		runPlugin(plugin, req, client)
 	}
 }
@@ -30,9 +30,9 @@ func ScannerHandler(req *http.Request) {
 // Generate HTTP Client with Proxy
 func createHTTPClient() (*http.Client, error) {
     var client *http.Client
-    if utils.Proxy != "" {
+    if initializers.Proxy != "" {
         // Create HTTP client with proxy
-        proxyUrl, err := url.Parse(utils.Proxy)
+        proxyUrl, err := url.Parse(initializers.Proxy)
         if err != nil {
             return nil, fmt.Errorf("failed to parse proxy URL: %s", err)
         }
@@ -99,6 +99,6 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 	if found {
 		
 		
-		utils.VulnerabilityOutput(scanName, severity, url, summary)
+		initializers.VulnerabilityOutput(scanName, severity, url, summary)
 	}
 }

@@ -1,10 +1,10 @@
-package utils
+package initializers
 
 import (
 	"os"
 	"fmt"
 
-	"github.com/cfsdes/nucke/internal/utils/plugins"
+	"github.com/cfsdes/nucke/internal/initializers/plugins"
 )
 
 // Flags

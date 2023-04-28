@@ -12,19 +12,19 @@ import (
     "encoding/pem"
 
     "github.com/fatih/color"
-    "github.com/cfsdes/nucke/internal/utils"
+    "github.com/cfsdes/nucke/internal/initializers"
     "github.com/cfsdes/nucke/internal/parsers"
     "github.com/cfsdes/nucke/pkg/requests"
 )
 
 // Create a channel with a buffer of threads
-var ch = make(chan int, utils.Threads)
+var ch = make(chan int, initializers.Threads)
 
 // Start Proxy
 func StartProxy() {
 
     // Export CA certificate
-    if utils.ExportCA {
+    if initializers.ExportCA {
         exportCA()
         return
     }
@@ -36,16 +36,16 @@ func StartProxy() {
     proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 
     // Start messages
-    color.Cyan("Listening on port %s...\n", utils.Port)
+    color.Cyan("Listening on port %s...\n", initializers.Port)
 
-    if utils.Jaeles {
-        color.Cyan("Interacting with jaeles: %s\n", utils.JaelesApi)
+    if initializers.Jaeles {
+        color.Cyan("Interacting with jaeles: %s\n", initializers.JaelesApi)
     }
 
     fmt.Println()
 
     // Start to listen
-    log.Fatal(http.ListenAndServe(":"+utils.Port, proxy))
+    log.Fatal(http.ListenAndServe(":"+initializers.Port, proxy))
 
 }
 
@@ -60,15 +60,15 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 
     
     // Send request to jaeles API server and filter if scope is specified
-    if (utils.Scope != "" && regexp.MustCompile(utils.Scope).MatchString(req.URL.String()) || utils.Scope == "") {
+    if (initializers.Scope != "" && regexp.MustCompile(initializers.Scope).MatchString(req.URL.String()) || initializers.Scope == "") {
         
         // If jaeles scan is enabled
-        if utils.Jaeles {
-            parsers.SendToJaeles(requestBase64, utils.JaelesApi)
+        if initializers.Jaeles {
+            parsers.SendToJaeles(requestBase64, initializers.JaelesApi)
         }
 
         // If config with plugins is provided
-        if utils.Config != "" {
+        if initializers.Config != "" {
             // Clone request before scanning
             req2 := requests.CloneReq(req)
             
