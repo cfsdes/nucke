@@ -8,11 +8,12 @@ import (
     "time"
     
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
-    req := utils.CloneRequest(r)
+    req := requests.CloneReq(r)
 
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads) 
@@ -62,7 +63,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             newReq.Header = req.Header
 
             // Get raw request
-            rawReq := utils.RequestToRaw(newReq)
+            rawReq := requests.RequestToRaw(newReq)
 
             // Send request
             start := time.Now()

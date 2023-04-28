@@ -14,7 +14,7 @@ import (
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/utils"
     "github.com/cfsdes/nucke/internal/parsers"
-    pluginsUtils "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/requests"
 )
 
 // Create a channel with a buffer of threads
@@ -70,7 +70,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
         // If config with plugins is provided
         if utils.Config != "" {
             // Clone request before scanning
-            req2 := pluginsUtils.CloneRequest(req)
+            req2 := requests.CloneReq(req)
             
             // executa a ScannerHandler dentro de uma goroutine
             go func() {

@@ -10,11 +10,12 @@ import (
     "time"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
-    req := utils.CloneRequest(r)
+    req := requests.CloneReq(r)
 
     // Result channel
     resultChan := make(chan utils.Result)
@@ -43,7 +44,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher ut
     for _, match := range matches {
         for _, payload := range payloads {
             // Copy Request
-            reqCopy := utils.CloneRequest(req)
+            reqCopy := requests.CloneReq(req)
 
             // Create a new request body with the tag replaced by a payload
             var newBody string
@@ -59,7 +60,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher ut
             reqCopy.Body = ioutil.NopCloser(strings.NewReader(newBody))
 
             // Get raw request
-            rawReq := utils.RequestToRaw(reqCopy)
+            rawReq := requests.RequestToRaw(reqCopy)
 
             // Send request
             start := time.Now()

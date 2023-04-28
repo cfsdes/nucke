@@ -1,4 +1,4 @@
-package utils
+package requests
 
 import (
 	"net/http"
@@ -14,7 +14,7 @@ import (
 */
 
 // Create a new request to forward
-func CloneRequest(req *http.Request) *http.Request {
+func CloneReq(req *http.Request) *http.Request {
 	// Create a new request based on the original one
     // but with an empty body
     body := []byte{}

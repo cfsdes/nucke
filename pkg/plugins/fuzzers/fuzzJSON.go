@@ -9,12 +9,13 @@ import (
     "fmt"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 
 func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
-    req := utils.CloneRequest(r)
+    req := requests.CloneReq(r)
 
     // Result channel
     resultChan := make(chan utils.Result)
@@ -90,7 +91,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     }
 
     // Get raw request
-    rawReq := utils.RequestToRaw(newReq)
+    rawReq := requests.RequestToRaw(newReq)
 
     // Make request
     start := time.Now()

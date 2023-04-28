@@ -2,13 +2,11 @@ package utils
 
 import (
 	"regexp"
-	"io/ioutil"
-	"io"
 	"fmt"
-	"compress/gzip"
 	"net/http"
 
 	internalUtils "github.com/cfsdes/nucke/internal/utils"
+	"github.com/cfsdes/nucke/pkg/requests"
 )
 
 // Matcher Structure
@@ -57,10 +55,10 @@ type Result struct {
 // Matcher Check main function
 func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string, resultChan chan Result) {
 	// Get URL from raw request
-	url := ExtractRawURL(rawReq)
+	url := requests.ExtractRawURL(rawReq)
 	
 	foundArray := make([]bool, 0)
-	statusCode, resBody, resHeaders := parseResponse(resp)
+	statusCode, resBody, resHeaders := requests.ParseResponse(resp)
 
 	// Verifying if all rules matched
 	if m.Body != nil {
@@ -113,42 +111,6 @@ func MatchChek(m Matcher, resp *http.Response, resTime int, oobID string, rawReq
 	} else {
 		resultChan <- Result{false, "", "", "", ""}
 	}
-}
-
-// Parse response
-func parseResponse(resp *http.Response) (int, string, map[string][]string) {
-	// Get status code
-    statusCode := resp.StatusCode
-
-	// Get response body
-	defer resp.Body.Close()
-	
-	var bodyReader io.ReadCloser
-	var err error
-	
-	switch resp.Header.Get("Content-Encoding") {
-	case "gzip":
-		bodyReader, err = gzip.NewReader(resp.Body)
-		if err != nil {
-			fmt.Println("Response parser gzip error: ", err)
-		}
-		defer bodyReader.Close()
-	default:
-		bodyReader = resp.Body
-	}
-
-	bodyBytes, err := ioutil.ReadAll(bodyReader)
-	if err != nil {
-		fmt.Println("Response parser error: ", err)
-	}
-
-	// Get response headers
-    responseHeaders := make(map[string][]string)
-    for k, v := range resp.Header {
-        responseHeaders[k] = v
-    }
-
-	return statusCode, string(bodyBytes), responseHeaders
 }
 
 // Check if regexList match with response body

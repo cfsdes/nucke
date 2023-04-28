@@ -1,4 +1,4 @@
-package utils
+package requests
 
 import (
     "net/http"
@@ -9,7 +9,7 @@ import (
 )
 
 func RequestToRaw(r *http.Request) string {
-    req := CloneRequest(r)
+    req := CloneReq(r)
 
     // Write the request line
     raw := fmt.Sprintf("%s %s %s\r\n", req.Method, req.URL.RequestURI(), req.Proto)

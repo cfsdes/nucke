@@ -9,11 +9,12 @@ import (
     "fmt"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
-    req := utils.CloneRequest(r)
+    req := requests.CloneReq(r)
     
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
@@ -54,7 +55,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             }
 
             // Copy Request
-            reqCopy := utils.CloneRequest(req)
+            reqCopy := requests.CloneReq(req)
             reqCopy.URL.RawQuery = newParams.Encode()
 
             // Add request body, if method is POST
@@ -63,7 +64,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             }
 
             // Get raw request
-            rawReq := utils.RequestToRaw(reqCopy)
+            rawReq := requests.RequestToRaw(reqCopy)
 
             // Send request
             start := time.Now()

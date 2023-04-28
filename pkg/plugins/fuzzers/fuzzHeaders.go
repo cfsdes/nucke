@@ -8,11 +8,12 @@ import (
     "fmt"
 
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
-    req := utils.CloneRequest(r)
+    req := requests.CloneReq(r)
 
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
@@ -36,7 +37,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
     for _, header := range headers {
         // Create a new request with the header replaced by a payload
         for _, payload := range payloads {
-            req2 := utils.CloneRequest(req)
+            req2 := requests.CloneReq(req)
 
             if keepOriginalKey {
                 currentValue := req.Header.Get(header)
@@ -52,7 +53,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
             }
 
             // Get raw request
-            rawReq := utils.RequestToRaw(req2)
+            rawReq := requests.RequestToRaw(req2)
 
             // Send request
             start := time.Now()
