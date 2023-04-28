@@ -8,12 +8,12 @@ import (
     "time"
     "fmt"
 
-    "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
     
     // Update payloads {{.oob}} to interact url
@@ -23,7 +23,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
     params := req.URL.Query()
 
     // Result channel
-    resultChan := make(chan utils.Result)
+    resultChan := make(chan detections.Result)
 
     // Get request body, if method is POST
     var body []byte
@@ -82,7 +82,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             oobID := internalUtils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+            go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
         }
     }
 

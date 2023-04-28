@@ -8,17 +8,17 @@ import (
     "time"
     "fmt"
 
-    "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
 
-func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Result channel
-    resultChan := make(chan utils.Result)
+    resultChan := make(chan detections.Result)
     
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads)
@@ -62,7 +62,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher u
 }
 
 // function to add payload to JSON
-func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher, keepOriginalKey bool) {
+func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, keepOriginalKey bool) {
     if innerMap, ok := value.(map[string]interface{}); ok {
         // Se for um mapa, iterar sobre suas chaves e valores
         for innerKey, innerValue := range innerMap {
@@ -74,7 +74,7 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
 }
 
 // Scan to send request and check match
-func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan utils.Result, req *http.Request, client *http.Client, matcher utils.Matcher, keepOriginalKey bool) {
+func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, keepOriginalKey bool) {
     // Iterate over each json object and add payload to it
     newJsonData := createNewJSONData(jsonData, key, payload, keepOriginalKey)
 
@@ -107,7 +107,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     oobID := internalUtils.ExtractOobID(payload)
 
     // Check if match vulnerability
-    go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+    go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
 }
 
 // Convert bytes to JSON

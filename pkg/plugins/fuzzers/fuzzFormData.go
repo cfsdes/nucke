@@ -7,19 +7,19 @@ import (
     "strings"
     "time"
     
-    "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Update payloads {{.oob}} to interact url
     payloads = internalUtils.ReplaceOob(payloads) 
     
     // Result channel
-    resultChan := make(chan utils.Result)
+    resultChan := make(chan detections.Result)
 
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
@@ -80,7 +80,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             oobID := internalUtils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go utils.MatchChek(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+            go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
         }
     }
 
