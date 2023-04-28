@@ -25,8 +25,8 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string
         Cyan := color.New(color.FgCyan, color.Bold)
         Cyan.Printf("Usage: \n")
         fmt.Fprintf(flag.CommandLine.Output(), "  %s [flags]\n\n", os.Args[0])
-        Cyan.Printf("Flags: \n")
-		flag.PrintDefaults()
+        //Cyan.Printf("Flags: \n")
+		PrintFlagsByTopic() // Imprime as flags por tópico
 	}
 
     flag.Parse()
@@ -34,3 +34,25 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string
     return
 }
 
+func PrintFlagsByTopic() {
+    Cyan := color.New(color.FgCyan, color.Bold)
+
+    // Define os tópicos e as flags correspondentes
+    topics := map[string][]string{
+        "Proxy": []string{"port"},
+        "Jaeles": []string{"jc-api", "jc"},
+        "Scan": []string{"config", "proxy", "threads", "out", "update-plugins"},
+        "Misc": []string{"export-ca"},
+    }
+
+    // Imprime as flags por tópico
+    for topic, flags := range topics {
+        Cyan.Printf("%s:\n", topic)
+        for _, name := range flags {
+            f := flag.Lookup(name)
+            flagText := fmt.Sprintf("-%s", name)
+            fmt.Printf("  %-25s %s\n", flagText, f.Usage)
+        }
+        fmt.Println()
+    }
+}
