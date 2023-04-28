@@ -36,10 +36,11 @@ func StartProxy() {
     proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 
     // Start messages
-    color.Cyan("Listening on port %s...\n", initializers.Port)
+    Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
+    fmt.Printf("[%s] Listening on port %s...\n", Cyan("INF"), initializers.Port)
 
     if initializers.Jaeles {
-        color.Cyan("Interacting with jaeles: %s\n", initializers.JaelesApi)
+        fmt.Printf("[%s] Interacting with jaeles: %s\n", Cyan("INF"), initializers.JaelesApi)
     }
 
     fmt.Println()

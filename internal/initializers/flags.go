@@ -22,9 +22,10 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string
 
     // Add the welcome message to the --help output
 	flag.Usage = func() {
-        color.Cyan("Usage: \n")
+        Cyan := color.New(color.FgCyan, color.Bold)
+        Cyan.Printf("Usage: \n")
         fmt.Fprintf(flag.CommandLine.Output(), "  %s [flags]\n\n", os.Args[0])
-        color.Cyan("Flags: \n")
+        Cyan.Printf("Flags: \n")
 		flag.PrintDefaults()
 	}
 

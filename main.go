@@ -11,9 +11,6 @@ func main() {
     binaries := []string{"interactsh-client"}
     initializers.CheckBinaries(binaries)
 
-    // Initial banner
-    initializers.Banner()
-
 	// Start Proxy
 	runner.StartProxy()
 }

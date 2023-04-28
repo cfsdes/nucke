@@ -27,7 +27,8 @@ type Config struct {
 
 func ParseConfig(configFile string) (filePaths []string){
 	// Initial message
-	color.Magenta("Loading plugins...\n")
+	Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
+	fmt.Printf("[%s] Loading plugins...\n", Cyan("INF"))
 
 	// Read config file
 	yamlFile, err := ioutil.ReadFile(configFile)

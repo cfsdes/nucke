@@ -26,6 +26,9 @@ var ExportCA bool			// Export PEM certificate
 func init() {
 	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA = ParseFlags()
 
+	// Initial banner
+	Banner()
+
 	if Config != "" {
 		// Parse Config.yaml
 		FilePaths = plugins.ParseConfig(Config)

@@ -19,7 +19,8 @@ var interactURL string
 
 func StartInteractsh() string {
 	// Initial Message
-	color.Magenta("Starting interactsh...\n")
+    Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
+	fmt.Printf("[%s] Starting interactsh...\n", Cyan("INF"))
 
 	// Start interactsh client and save session file
     cmd := exec.Command("interactsh-client", "-sf", interactSession)
