@@ -4,6 +4,8 @@ import (
 	"net/http"
     "io/ioutil"
     "time"
+    "io"
+    "compress/gzip"
     "fmt"
 )
 
@@ -27,12 +29,26 @@ func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[s
     }
     defer resp.Body.Close()
 
-    // Read the response body
-    responseBody, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        fmt.Println(err)
-        return 0, "", 0, nil
-    }
+    // Get response body
+	defer resp.Body.Close()
+	
+	var bodyReader io.ReadCloser
+	
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		bodyReader, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			fmt.Println("Response parser gzip error: ", err)
+		}
+		defer bodyReader.Close()
+	default:
+		bodyReader = resp.Body
+	}
+
+	bodyBytes, err := ioutil.ReadAll(bodyReader)
+	if err != nil {
+		fmt.Println("Response parser error: ", err)
+	}
 
     // Get response time
     elapsed := int(time.Since(start).Seconds())
@@ -43,5 +59,5 @@ func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[s
         responseHeaders[k] = v
     }
 
-    return elapsed, string(responseBody), resp.StatusCode, responseHeaders
+    return elapsed, string(bodyBytes), resp.StatusCode, responseHeaders
 }

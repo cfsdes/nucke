@@ -3,7 +3,9 @@ package utils
 import (
 	"regexp"
 	"io/ioutil"
+	"io"
 	"fmt"
+	"compress/gzip"
 	"net/http"
 
 	internalUtils "github.com/cfsdes/nucke/internal/utils"
@@ -119,11 +121,26 @@ func parseResponse(resp *http.Response) (int, string, map[string][]string) {
     statusCode := resp.StatusCode
 
 	// Get response body
-	responseBody, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        fmt.Println("Match parser error: ", err)
-    }
 	defer resp.Body.Close()
+	
+	var bodyReader io.ReadCloser
+	var err error
+	
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		bodyReader, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			fmt.Println("Response parser gzip error: ", err)
+		}
+		defer bodyReader.Close()
+	default:
+		bodyReader = resp.Body
+	}
+
+	bodyBytes, err := ioutil.ReadAll(bodyReader)
+	if err != nil {
+		fmt.Println("Response parser error: ", err)
+	}
 
 	// Get response headers
     responseHeaders := make(map[string][]string)
@@ -131,7 +148,7 @@ func parseResponse(resp *http.Response) (int, string, map[string][]string) {
         responseHeaders[k] = v
     }
 
-	return statusCode, string(responseBody), responseHeaders
+	return statusCode, string(bodyBytes), responseHeaders
 }
 
 // Check if regexList match with response body
