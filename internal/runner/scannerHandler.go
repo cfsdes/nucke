@@ -9,11 +9,12 @@ import (
 	"path/filepath"
     "os/user"
     "strings"
+    "crypto/tls"
 
 	"github.com/cfsdes/nucke/internal/utils"
 )
 
-func ScannerHandler(req *http.Request, w http.ResponseWriter) {
+func ScannerHandler(req *http.Request) {
 	// Create HTTP Client
 	client, err := createHTTPClient()
 	if err != nil {
@@ -22,7 +23,7 @@ func ScannerHandler(req *http.Request, w http.ResponseWriter) {
 
 	// Run Config Plugins
 	for _, plugin := range utils.PluginPaths {
-		runPlugin(plugin, req, w, client)
+		runPlugin(plugin, req, client)
 	}
 }
 
@@ -38,19 +39,25 @@ func createHTTPClient() (*http.Client, error) {
         client = &http.Client{
             Transport: &http.Transport{
                 DisableKeepAlives: true,
+                TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
                 Proxy: http.ProxyURL(proxyUrl),
             },
         }
     } else {
         // Create HTTP client without proxy
-        client = &http.Client{}
+        client = &http.Client{
+            Transport: &http.Transport{
+                TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+                DisableKeepAlives: true,
+            },
+        }
     }
     return client, nil
 }
 
 
 // Run plugin
-func runPlugin(scannerPlugin string, req *http.Request, w http.ResponseWriter, client *http.Client) {
+func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 	// Get the current user's home directory
     usr, err := user.Current()
     if err != nil {
@@ -82,7 +89,7 @@ func runPlugin(scannerPlugin string, req *http.Request, w http.ResponseWriter, c
     scanName = strings.TrimPrefix(scanName, ".") // e.g: sqli
 
     // Call the run() function with a req argument
-	severity, url, summary, found, err := runFunc.(func(*http.Request, http.ResponseWriter, *http.Client, string) (string, string, string, bool, error))(req, w, client, pluginDir)
+	severity, url, summary, found, err := runFunc.(func(*http.Request, *http.Client, string) (string, string, string, bool, error))(req, client, pluginDir)
     if err != nil {
         fmt.Println("Error running plugin:", err)
         os.Exit(1)

@@ -13,7 +13,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Result channel

@@ -13,7 +13,7 @@ import (
     internalUtils "github.com/cfsdes/nucke/internal/utils"
 )
 
-func FuzzXML(r *http.Request, w http.ResponseWriter, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher utils.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
     req := utils.CloneRequest(r)
 
     // Result channel

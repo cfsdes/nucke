@@ -2,12 +2,14 @@ package runner
 
 import (
 	"encoding/base64"
-	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
     "regexp"
     "fmt"
     "log"
+    "github.com/elazarl/goproxy"
+    "os"
+    "encoding/pem"
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/utils"
@@ -19,17 +21,22 @@ import (
 var ch = make(chan int, utils.Threads)
 
 // Start Proxy
-func StartProxyHandler() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r)
-	})
+func StartProxy() {
 
-    server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", utils.Port),
-		Handler: http.DefaultServeMux,
-	}
-	
-	color.Cyan("Listening on port %d...\n", utils.Port)
+    // Export CA certificate
+    if utils.ExportCA {
+        exportCA()
+        return
+    }
+
+    // Cria um proxy com a função de roteamento personalizada
+    proxy := goproxy.NewProxyHttpServer()
+    //proxy.Verbose = true
+    proxy.OnRequest().DoFunc(requestHandler)
+    proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+
+    // Start messages
+    color.Cyan("Listening on port %s...\n", utils.Port)
 
     if utils.Jaeles {
         color.Cyan("Interacting with jaeles: %s\n", utils.JaelesApi)
@@ -37,26 +44,23 @@ func StartProxyHandler() {
 
     fmt.Println()
 
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+    // Start to listen
+    log.Fatal(http.ListenAndServe(":"+utils.Port, proxy))
+
 }
 
 // Proxy Handler
-func handler(w http.ResponseWriter, r *http.Request) {
-	// Convert the raw request to base64
-	requestBytes, err := httputil.DumpRequest(r, true)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
-    
-    // Set the Host field of the request URL based on the Host header of the incoming request
-    r.URL.Host = r.Host
+func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+    // Convert the raw request to base64
+	requestBytes, err := httputil.DumpRequest(req, true)
+    if err != nil {
+        fmt.Println("requestHandler: Error converting rawRequest: ",err)
+    }
+    requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
 
+    
     // Send request to jaeles API server and filter if scope is specified
-    if (utils.Scope != "" && regexp.MustCompile(utils.Scope).MatchString(r.URL.String()) || utils.Scope == "") {
+    if (utils.Scope != "" && regexp.MustCompile(utils.Scope).MatchString(req.URL.String()) || utils.Scope == "") {
         
         // If jaeles scan is enabled
         if utils.Jaeles {
@@ -66,14 +70,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
         // If config with plugins is provided
         if utils.Config != "" {
             // Clone request before scanning
-            req := pluginsUtils.CloneRequest(r)
+            req2 := pluginsUtils.CloneRequest(req)
             
             // executa a ScannerHandler dentro de uma goroutine
             go func() {
                 // adiciona 1 ao canal para indicar que está utilizando uma goroutine
                 ch <- 1
 
-                ScannerHandler(req, w)
+                ScannerHandler(req2)
 
                 // sinaliza ao canal que a goroutine está livre
                 <-ch
@@ -81,39 +85,29 @@ func handler(w http.ResponseWriter, r *http.Request) {
         }
 	} 
 
-    fowardRequest(w, r)
+    // Defina a lógica para lidar com a requisição aqui
+    return req, nil
 }
 
-func fowardRequest(w http.ResponseWriter, r *http.Request) {
-    // Add default protocol scheme if missing
-    if r.URL.Scheme == "" {
-        if r.TLS != nil {
-            r.URL.Scheme = "https"
-        } else {
-            r.URL.Scheme = "http"
-        }
-    }
+// Function to export CA certificates
+func exportCA() {
+    color.Cyan("CA certificate exported to local path: nucke-cert.pem\n\n")
 
-    // Forward the request to the destination server
-    resp, err := http.DefaultTransport.RoundTrip(r)
+    // Criar o arquivo cert.pem
+    file, err := os.Create("nucke-cert.pem")
     if err != nil {
-        http.Error(w, err.Error(), http.StatusBadGateway)
+        fmt.Println(err)
         return
     }
-    defer resp.Body.Close()
+    defer file.Close()
 
-    // Copy the response headers
-    for key, values := range resp.Header {
-        for _, value := range values {
-            w.Header().Add(key, value)
-        }
-    }
+    // Obter o certificado X.509 da propriedade Certificate
+    cert := goproxy.GoproxyCa.Certificate[0]
 
-    // Copy the response body and return it to the client
-    body, err := ioutil.ReadAll(resp.Body)
+    // Codificar o certificado em formato PEM e escrever no arquivo
+    err = pem.Encode(file, &pem.Block{Type: "CERTIFICATE", Bytes: cert})
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        fmt.Println(err)
         return
     }
-    w.Write(body)
 }

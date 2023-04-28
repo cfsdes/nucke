@@ -8,7 +8,7 @@ import (
 )
 
 // Flags
-var Port int 				// Port that nucke will listen
+var Port string 			// Port that nucke will listen
 var Threads int 			// Nucke scan threads
 var JaelesApi string		// Jaeles server API url
 var Jaeles bool				// Jaeles boolean flag
@@ -20,10 +20,11 @@ var FilePaths []string		// File paths with plugins in golang format
 var PluginPaths []string	// Plugins paths with plugins in .so format
 var InteractURL string		// Interact URL for OOB scan
 var UpdatePlugins bool		// Force the update of all plugins
+var ExportCA bool			// Export PEM certificate
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA = ParseFlags()
 
 	if Config != "" {
 		// Parse Config.yaml

@@ -15,5 +15,5 @@ func main() {
     utils.Banner()
 
 	// Start Proxy
-	runner.StartProxyHandler()
+	runner.StartProxy()
 }

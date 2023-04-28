@@ -11,7 +11,7 @@ import (
 * Just reproduce the request provided
 */
 
-func BasicRequest(r *http.Request, w http.ResponseWriter, client *http.Client) (int, string, int, map[string][]string) {
+func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[string][]string) {
     req := CloneRequest(r)
 
     if client == nil {
