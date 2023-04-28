@@ -40,9 +40,9 @@ func PrintFlagsByTopic() {
     // Define os tópicos e as flags correspondentes
     topics := map[string][]string{
         "Proxy": []string{"port"},
-        "Jaeles": []string{"jc-api", "jc"},
-        "Scan": []string{"config", "proxy", "threads", "out", "update-plugins"},
-        "Misc": []string{"export-ca"},
+        "Jaeles": []string{"jc", "jc-api"},
+        "Scan": []string{"config", "proxy", "threads", "out"},
+        "Misc": []string{"update-plugins", "export-ca"},
     }
 
     // Imprime as flags por tópico
