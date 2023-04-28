@@ -1,4 +1,4 @@
-package template
+package report
 
 import (
 	"io/ioutil"
