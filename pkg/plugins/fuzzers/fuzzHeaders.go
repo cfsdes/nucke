@@ -6,13 +6,14 @@ import (
     "bytes"
     "time"
     "fmt"
+    "strings"
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/internal/initializers"
 )
 
-func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Update payloads {{.oob}} to interact url
@@ -39,14 +40,10 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
         for _, payload := range payloads {
             req2 := requests.CloneReq(req)
 
-            if keepOriginalKey {
-                currentValue := req.Header.Get(header)
-                req2.Header.Set(header, currentValue+payload)
-            } else {
-                req2.Header.Set(header, payload)
-            }
+            currentValue := req.Header.Get(header)
+            payload  = strings.Replace(payload, "{{.original}}", currentValue, -1)
+            req2.Header.Set(header, payload)
             
-
             // Add request body, if method is POST
             if req2.Method == http.MethodPost {
                 req2.Body = ioutil.NopCloser(bytes.NewReader(body))

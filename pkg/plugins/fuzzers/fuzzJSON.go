@@ -7,6 +7,7 @@ import (
     "net/http"
     "time"
     "fmt"
+    "strings"
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
@@ -14,7 +15,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -46,7 +47,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         for _, payload := range payloads {
             
             // Check if value is map. If yes, recursively check it to inject payload
-            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher, keepOriginalKey)
+            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher)
         }
     }
 
@@ -62,21 +63,21 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
 }
 
 // function to add payload to JSON
-func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, keepOriginalKey bool) {
+func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher) {
     if innerMap, ok := value.(map[string]interface{}); ok {
         // Se for um mapa, iterar sobre suas chaves e valores
         for innerKey, innerValue := range innerMap {
-            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher, keepOriginalKey)
+            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher)
         }
     } else {
-        loopScan(jsonData, key, payload, resultChan, req, client, matcher, keepOriginalKey)
+        loopScan(jsonData, key, payload, resultChan, req, client, matcher)
     }
 }
 
 // Scan to send request and check match
-func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, keepOriginalKey bool) {
+func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher) {
     // Iterate over each json object and add payload to it
-    newJsonData := createNewJSONData(jsonData, key, payload, keepOriginalKey)
+    newJsonData := createNewJSONData(jsonData, key, payload)
 
     newBody, err := json.Marshal(newJsonData)
     if err != nil {
@@ -119,23 +120,20 @@ func unmarshalJSON(body []byte) (map[string]interface{}, error) {
 
 
 // Create new JSON object with payload
-func createNewJSONData(jsonData map[string]interface{}, key string, payload string, keepOriginalKey bool) map[string]interface{} {
+func createNewJSONData(jsonData map[string]interface{}, key string, payload string) map[string]interface{} {
     newJsonData := make(map[string]interface{})
     for k, v := range jsonData {
         if k == key {
             if m, ok := v.(map[string]interface{}); ok {
-                newJsonData[k] = createNewJSONData(m, key, payload, keepOriginalKey)
+                newJsonData[k] = createNewJSONData(m, key, payload)
             } else {
-                if keepOriginalKey {
-                    originalValue := fmt.Sprintf("%v", v)
-                    newJsonData[k] = originalValue+payload
-                } else {
-                    newJsonData[k] = payload
-                }
+                originalValue := fmt.Sprintf("%v", v)
+                payload  = strings.Replace(payload, "{{.original}}", originalValue, -1)
+                newJsonData[k] = payload
             }
         } else {
             if m, ok := v.(map[string]interface{}); ok {
-                newJsonData[k] = createNewJSONData(m, key, payload, keepOriginalKey)
+                newJsonData[k] = createNewJSONData(m, key, payload)
             } else {
                 newJsonData[k] = v
             }

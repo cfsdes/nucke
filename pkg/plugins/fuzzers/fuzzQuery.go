@@ -7,13 +7,14 @@ import (
     "bytes"
     "time"
     "fmt"
+    "strings"
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/internal/initializers"
 )
 
-func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
     
     // Update payloads {{.oob}} to interact url
@@ -44,11 +45,8 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             newParams := make(url.Values)
             for k, v := range params {
                 if k == key {
-                    if keepOriginalKey {
-                        newParams.Set(k, v[0]+payload)
-                    } else {
-                        newParams.Set(k, payload)
-                    }
+                    payload  = strings.Replace(payload, "{{.original}}", v[0], -1)
+                    newParams.Set(k, payload)
                 } else {
                     newParams.Set(k, v[0])
                 }

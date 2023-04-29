@@ -14,7 +14,7 @@ import (
     "github.com/cfsdes/nucke/internal/initializers"
 )
 
-func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, keepOriginalKey bool) (bool, string, string, string, string) {
+func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -48,13 +48,9 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
 
             // Create a new request body with the tag replaced by a payload
             var newBody string
-            if keepOriginalKey {
-                newBody = strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], match[2]+payload, match[3]), -1)
-            } else {
-                newBody = strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], payload, match[3]), -1)
-            }
             
-            
+            payload  = strings.Replace(payload, "{{.original}}", match[2], -1)
+            newBody = strings.Replace(string(body), match[0], fmt.Sprintf("<%s>%s</%s>", match[1], payload, match[3]), -1)
 
             // Set request body
             reqCopy.Body = ioutil.NopCloser(strings.NewReader(newBody))
