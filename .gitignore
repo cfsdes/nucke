@@ -2,4 +2,5 @@
 templates/**/*.so
 nucke
 config.yaml
-nucke-cert.pem
+nucke-cert.crt
+config.yaml
