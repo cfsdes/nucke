@@ -18,6 +18,10 @@ var interactSession string = "/tmp/nucke-interact-session"
 var interactURL string
 
 func StartInteractsh() string {
+    // Removing old session files
+    deleteFileIfExists(interactOutput)
+    deleteFileIfExists(interactSession)
+
 	// Initial Message
     Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
 	fmt.Printf("[%s] Starting interactsh...\n", Cyan("INF"))
@@ -124,4 +128,13 @@ func CheckOobInteraction(oobID string) bool {
     }
 
     return false
+}
+
+
+func deleteFileIfExists(filePath string) {
+    if _, err := os.Stat(filePath); err == nil {
+        if err := os.Remove(filePath); err != nil {
+            fmt.Println("Error deleting interactsh file:", err)
+        }
+    }
 }
