@@ -92,10 +92,10 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 
 // Function to export CA certificates
 func exportCA() {
-    color.Cyan("CA certificate exported to local path: nucke-cert.pem\n\n")
+    color.Cyan("CA certificate exported to local path: nucke-cert.crt\n\n")
 
     // Criar o arquivo cert.pem
-    file, err := os.Create("nucke-cert.pem")
+    file, err := os.Create("nucke-cert.crt")
     if err != nil {
         fmt.Println(err)
         return
