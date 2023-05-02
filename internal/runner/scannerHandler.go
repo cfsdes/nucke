@@ -21,16 +21,10 @@ func ScannerHandler(req *http.Request) {
 		fmt.Println("ScannerHandler:",err)
 	}
 
-    // Add request to pendingRequests
-    initializers.PendingScans++
-
 	// Run Config Plugins
 	for _, plugin := range initializers.PluginPaths {
 		runPlugin(plugin, req, client)
 	}
-
-    // Remove request from pendingRequests
-    initializers.PendingScans--
 }
 
 // Generate HTTP Client with Proxy

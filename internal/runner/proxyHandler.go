@@ -92,6 +92,9 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
             // Clone request before scanning
             req2 := requests.CloneReq(req)
             
+            // Add request to pendingRequests
+            initializers.PendingScans++
+
             // executa a ScannerHandler dentro de uma goroutine
             go func() {
                 // adiciona 1 ao canal para indicar que está utilizando uma goroutine
@@ -99,6 +102,9 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 
                 ScannerHandler(req2)
 
+                // Remove request from pendingRequests
+                initializers.PendingScans--
+                
                 // sinaliza ao canal que a goroutine está livre
                 <-ch
             }()
