@@ -84,7 +84,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
     }
 
     // Get plugin name (without extension and "." in the start of the name)
-    scanName := filepath.Base(pluginDir)
+    scanName := filepath.Base(pluginPath)
     scanName = strings.TrimSuffix(scanName, filepath.Ext(scanName))
     scanName = strings.TrimPrefix(scanName, ".") // e.g: sqli
 
