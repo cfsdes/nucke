@@ -4,6 +4,8 @@ import (
 	"net/http"
     "time"
     "fmt"
+
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 /**
@@ -21,7 +23,9 @@ func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[s
     start := time.Now()
     resp, err := client.Do(req)
     if err != nil {
-        fmt.Println("Basic Request Error: ",err)
+        if initializers.Debug {
+            fmt.Println("Basic Request Error:",err)
+        }
         return 0, "", 0, nil
     }
 

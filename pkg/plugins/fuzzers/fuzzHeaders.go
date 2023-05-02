@@ -29,7 +29,9 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
         body, err = ioutil.ReadAll(req.Body)
         if err != nil {
             // handle error
-            fmt.Println(err)
+            if initializers.Debug {
+                fmt.Println("fuzzHeaders:",err)
+            }
             return false, "", "", "", ""
         }
     }
@@ -57,7 +59,9 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
             resp, err := client.Do(req2)
             if err != nil {
                 // handle error
-                fmt.Println(err)
+                if initializers.Debug {
+                    fmt.Println("fuzzHeaders:",err)
+                }
                 return false, "", "", "", ""
             }
 

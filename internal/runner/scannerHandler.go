@@ -18,7 +18,7 @@ func ScannerHandler(req *http.Request) {
 	// Create HTTP Client
 	client, err := createHTTPClient()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("ScannerHandler:",err)
 	}
 
 	// Run Config Plugins

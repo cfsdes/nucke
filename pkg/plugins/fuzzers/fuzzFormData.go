@@ -28,7 +28,9 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
 
     // Get form data parameters from request body
     if err := req.ParseForm(); err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzFormData:",err)
+        }
         return false, "", "", "", "" 
     }
 
@@ -51,7 +53,9 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             // Create a new request with the updated form data
             newReq, err := http.NewRequest(req.Method, req.URL.String(), reqBody)
             if err != nil {
-                fmt.Println(err)
+                if initializers.Debug {
+                    fmt.Println("fuzzFormData:",err)
+                }
                 return false, "", "", "", ""
             }
 
@@ -65,7 +69,9 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             start := time.Now()
             resp, err := client.Do(newReq)
             if err != nil {
-                fmt.Println(err)
+                if initializers.Debug {
+                    fmt.Println("fuzzFormData:",err)
+                }
                 return false, "", "", "", ""
             }
 

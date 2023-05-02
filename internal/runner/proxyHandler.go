@@ -97,7 +97,7 @@ func exportCA() {
     // Criar o arquivo cert.pem
     file, err := os.Create("nucke-cert.crt")
     if err != nil {
-        fmt.Println(err)
+        fmt.Println("Export CA:",err)
         return
     }
     defer file.Close()
@@ -108,7 +108,7 @@ func exportCA() {
     // Codificar o certificado em formato PEM e escrever no arquivo
     err = pem.Encode(file, &pem.Block{Type: "CERTIFICATE", Bytes: cert})
     if err != nil {
-        fmt.Println(err)
+        fmt.Println("Export CA:",err)
         return
     }
 }

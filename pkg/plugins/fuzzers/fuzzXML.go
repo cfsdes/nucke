@@ -31,7 +31,9 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     // Get request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzXML:",err)
+        }
         return false, "", "", "", ""
     }
 
@@ -62,7 +64,9 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
             start := time.Now()
             resp, err := client.Do(reqCopy)
             if err != nil {
-                fmt.Println(err)
+                if initializers.Debug {
+                    fmt.Println("fuzzXML:",err)
+                }
                 return false, "", "", "", ""
             }
 

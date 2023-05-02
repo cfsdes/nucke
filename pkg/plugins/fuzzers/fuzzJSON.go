@@ -32,14 +32,18 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     // Read request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzJSON:",err)
+        }
         return false, "", "", "", ""
     }
 
     // Create obj based on json data
     jsonData, err := unmarshalJSON(body)
     if err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzJSON:",err)
+        }
         return false, "", "", "", ""
     }
 
@@ -81,14 +85,18 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
 
     newBody, err := json.Marshal(newJsonData)
     if err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzJSON:",err)
+        }
     }
 
     reqBody := bytes.NewReader(newBody)
 
     newReq, err := createNewRequest(req, reqBody)
     if err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzJSON:",err)
+        }
     }
 
     // Get raw request
@@ -98,7 +106,9 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     start := time.Now()
     resp, err := client.Do(newReq)
     if err != nil {
-        fmt.Println(err)
+        if initializers.Debug {
+            fmt.Println("fuzzJSON:",err)
+        }
     }
 
     // Get response time

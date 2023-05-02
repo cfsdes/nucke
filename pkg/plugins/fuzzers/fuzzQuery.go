@@ -33,7 +33,9 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
         body, err = ioutil.ReadAll(req.Body)
         if err != nil {
             // handle error
-            fmt.Println(err)
+            if initializers.Debug {
+                fmt.Println("fuzzQuery:",err)
+            }
             return false, "", "", "", ""
         }
     }
@@ -69,7 +71,9 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             resp, err := client.Do(reqCopy)
             if err != nil {
                 // handle error
-                fmt.Println(err)
+                if initializers.Debug {
+                    fmt.Println("fuzzQuery:",err)
+                }
                 return false, "", "", "", ""
             }
             

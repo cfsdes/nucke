@@ -21,10 +21,11 @@ var PluginPaths []string	// Plugins paths with plugins in .so format
 var InteractURL string		// Interact URL for OOB scan
 var UpdatePlugins bool		// Force the update of all plugins
 var ExportCA bool			// Export PEM certificate
+var Debug bool 				// Debug Error messages
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug = ParseFlags()
 
 	// Initial banner
 	Banner()
@@ -44,7 +45,7 @@ func init() {
 		Output = FormatOutput(Output)
 		err := os.MkdirAll(Output, 0755)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error creating output path:",err)
 		}
 	}
 }
