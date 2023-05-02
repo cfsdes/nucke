@@ -97,8 +97,6 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 
 	// Parse output if vulnerability is found
 	if found {
-		
-		
 		initializers.VulnerabilityOutput(scanName, severity, url, summary)
 	}
 }
