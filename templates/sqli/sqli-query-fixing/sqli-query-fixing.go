@@ -56,13 +56,13 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
     matcher := detections.Matcher{
         ContentLength: &detections.ContentLengthMatcher{
             Operator: ">=",
-            Length: originalLength+200,
+            Length: originalLength+1000,
         },
     }
     matcher2 := detections.Matcher{
         ContentLength: &detections.ContentLengthMatcher{
             Operator: "<=",
-            Length: originalLength-200,
+            Length: originalLength-1000,
         },
     }
 
