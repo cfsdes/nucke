@@ -23,10 +23,12 @@ var UpdatePlugins bool		// Force the update of all plugins
 var ExportCA bool			// Export PEM certificate
 var Debug bool 				// Debug Error messages
 var Verbose bool			// Verbose Output
+var Stats bool				// Start Status server
+var PendingScans int 		// Number of Pending requests
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose, Stats = ParseFlags()
 
 	// Initial banner
 	Banner()

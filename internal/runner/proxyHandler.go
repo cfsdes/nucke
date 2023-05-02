@@ -51,8 +51,13 @@ func StartProxy() {
         fmt.Printf("[%s] Interacting with jaeles: %s\n", Cyan("INF"), initializers.JaelesApi)
     }
 
-    fmt.Println()
+    // Start Status Server
+    if initializers.Stats {
+        InitStatsServer()
+    }
 
+    fmt.Println()
+    
     // Start to listen
     log.Fatal(http.ListenAndServe(":"+initializers.Port, proxy))
 
