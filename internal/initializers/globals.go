@@ -22,10 +22,11 @@ var InteractURL string		// Interact URL for OOB scan
 var UpdatePlugins bool		// Force the update of all plugins
 var ExportCA bool			// Export PEM certificate
 var Debug bool 				// Debug Error messages
+var Verbose bool			// Verbose Output
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose = ParseFlags()
 
 	// Initial banner
 	Banner()

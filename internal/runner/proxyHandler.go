@@ -10,6 +10,7 @@ import (
     "github.com/elazarl/goproxy"
     "os"
     "encoding/pem"
+    "io/ioutil"
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/initializers"
@@ -31,6 +32,13 @@ func StartProxy() {
 
     // Cria um proxy com a função de roteamento personalizada
     proxy := goproxy.NewProxyHttpServer()
+
+    // Se debug não estiver habilitado, desabilitar logs da biblioteca goproxy
+    if !initializers.Debug {
+        logger := log.New(ioutil.Discard, "", 0)
+        proxy.Logger = logger
+    }
+    
     //proxy.Verbose = true
     proxy.OnRequest().DoFunc(requestHandler)
     proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
@@ -52,6 +60,7 @@ func StartProxy() {
 
 // Proxy Handler
 func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+
     // Convert the raw request to base64
 	requestBytes, err := httputil.DumpRequest(req, true)
     if err != nil {
@@ -59,10 +68,15 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
     }
     requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
 
-    
+
     // Send request to jaeles API server and filter if scope is specified
     if (initializers.Scope != "" && regexp.MustCompile(initializers.Scope).MatchString(req.URL.String()) || initializers.Scope == "") {
         
+        // If verbose
+        if initializers.Verbose {
+            fmt.Printf("[Sent] %s %s\n", req.Method, req.URL.String())
+        }
+
         // If jaeles scan is enabled
         if initializers.Jaeles {
             parsers.SendToJaeles(requestBase64, initializers.JaelesApi)
