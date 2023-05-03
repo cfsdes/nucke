@@ -9,7 +9,7 @@ import (
 )
 
 func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string, proxy string, config string, output string, updatePlugins bool, exportCA bool, debug bool, verbose bool, stats bool) {
-	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8080)")
+	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8888)")
     flag.IntVar(&threads, "threads", 8, "threads to use during plugin scan (default: 8)")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
     flag.BoolVar(&jc, "jc", false, "enable jaeles proxy")
