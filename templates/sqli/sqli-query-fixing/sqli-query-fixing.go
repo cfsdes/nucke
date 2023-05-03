@@ -28,13 +28,14 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
 
     // Scan query fixing content length >= & ,=
-    vulnFound, rawReq, url := queryFixingContentLengthBased(r, client, pluginDir)
-    if vulnFound {
-        return vulnFound, rawReq, url
+    vulnFoundContent1, _, _ := queryFixingContentLengthBased(r, client, pluginDir)
+    vulnFoundContent2, rawReq, url := queryFixingContentLengthBased(r, client, pluginDir)
+    if vulnFoundContent1 && vulnFoundContent2 {
+        return true, rawReq, url
     }
 
     // Scan query fixing status code
-    vulnFound, rawReq, url = queryFixingStatusCodeBased(r, client, pluginDir)
+    vulnFound, rawReq, url := queryFixingStatusCodeBased(r, client, pluginDir)
     if vulnFound {
         return vulnFound, rawReq, url
     }
@@ -56,13 +57,13 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
     matcher := detections.Matcher{
         ContentLength: &detections.ContentLengthMatcher{
             Operator: ">=",
-            Length: originalLength+1000,
+            Length: originalLength+200,
         },
     }
     matcher2 := detections.Matcher{
         ContentLength: &detections.ContentLengthMatcher{
             Operator: "<=",
-            Length: originalLength-1000,
+            Length: originalLength-200,
         },
     }
 
