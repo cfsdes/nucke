@@ -5,6 +5,7 @@ import (
     "github.com/cfsdes/nucke/pkg/report"
     "github.com/cfsdes/nucke/pkg/plugins/utils"
     "github.com/cfsdes/nucke/pkg/plugins/fuzzers"
+    "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/pkg/plugins/detections"
 )
 
@@ -26,20 +27,24 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 // Running all Fuzzers
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
     
-    // Call All Fuzzers (Except fuzzHeaders)
-    payloads := utils.FileToSlice(pluginDir, "payloads.txt")
-    matcher := detections.Matcher{
-        Time: &detections.TimeMatcher{
-            Operator: ">=",
-            Seconds:  20,
-        },
-    }
+    // Make basic request
+    originalResTime, _, _, _ := requests.BasicRequest(r, client)
 
-    headers := []string{"User-Agent","X-Forwarded-For"}
-    match, rawReq, url, _, _ := fuzzers.FuzzHeaders(r, client, payloads, headers, matcher)
+    if originalResTime < 20 {
+        payloads := utils.FileToSlice(pluginDir, "payloads.txt")
+        matcher := detections.Matcher{
+            Time: &detections.TimeMatcher{
+                Operator: ">=",
+                Seconds:  20,
+            },
+        }
 
-    if match {
-        return match, rawReq, url
+        headers := []string{"User-Agent","X-Forwarded-For"}
+        match, rawReq, url, _, _ := fuzzers.FuzzHeaders(r, client, payloads, headers, matcher)
+
+        if match {
+            return match, rawReq, url
+        }
     }
 
     return false, "", ""
