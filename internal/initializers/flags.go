@@ -33,7 +33,7 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string
     flag.BoolVar(&debug, "debug", false, "Return debug error messages")
     flag.BoolVar(&verbose, "v", false, "Verbose requests made")
     flag.BoolVar(&stats, "stats", false, "Start status server on port 8899")
-    flag.Var(&headers, "headers", "Set custom headers during scans. Accept multiple usages.")
+    flag.Var(&headers, "headers", "Set custom headers. Accept multiple flag usages.")
 
     // Add the welcome message to the --help output
 	flag.Usage = func() {
@@ -54,9 +54,9 @@ func PrintFlagsByTopic() {
 
     // Define os tópicos e as flags correspondentes
     topics := map[string][]string{
-        "Proxy": []string{"port"},
+        "Proxy": []string{"port", "headers"},
         "Jaeles": []string{"jc", "jc-api"},
-        "Scan": []string{"config", "proxy", "threads", "headers", "out"},
+        "Scan": []string{"config", "proxy", "threads", "out"},
         "Misc": []string{"update-plugins", "export-ca", "debug", "v", "stats"},
     }
 
