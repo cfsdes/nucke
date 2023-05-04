@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"compress/gzip"
 	"net/http"
+
+	"github.com/cfsdes/nucke/internal/initializers"
 )
 
 // Parse response
@@ -47,7 +49,7 @@ func getBody(resp *http.Response) string {
 
 	// Read body
 	bodyBytes, err := ioutil.ReadAll(bodyReader)
-	if err != nil {
+	if err != nil && initializers.Debug {
 		fmt.Println("Response parser error: ", err)
 	}
 

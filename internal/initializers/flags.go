@@ -31,7 +31,7 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string
     flag.BoolVar(&updatePlugins, "update-plugins", false, "Force the build of all plugins")
     flag.BoolVar(&exportCA, "export-ca", false, "Export proxy PEM certificate")
     flag.BoolVar(&debug, "debug", false, "Return debug error messages")
-    flag.BoolVar(&verbose, "v", false, "Verbose output")
+    flag.BoolVar(&verbose, "v", false, "Verbose requests made")
     flag.BoolVar(&stats, "stats", false, "Start status server on port 8899")
     flag.Var(&headers, "headers", "Set custom headers during scans. Accept multiple usages.")
 
