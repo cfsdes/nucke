@@ -28,10 +28,9 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
 
     // Scan query fixing content length >= & ,=
-    vulnFoundContent1, _, _ := queryFixingContentLengthBased(r, client, pluginDir)
-    vulnFoundContent2, rawReq, url := queryFixingContentLengthBased(r, client, pluginDir)
-    if vulnFoundContent1 && vulnFoundContent2 {
-        return true, rawReq, url
+    vulnFound, rawReq, url := queryFixingContentLengthBased(r, client, pluginDir)
+    if vulnFound {
+        return vulnFound, rawReq, url
     }
 
     // Scan query fixing status code
