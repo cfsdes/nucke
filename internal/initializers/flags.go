@@ -8,7 +8,18 @@ import (
     "github.com/fatih/color"
 )
 
-func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string, proxy string, config string, output string, updatePlugins bool, exportCA bool, debug bool, verbose bool, stats bool) {
+type headersFlag []string
+
+func (h *headersFlag) String() string {
+	return fmt.Sprintf("%v", *h)
+}
+
+func (h *headersFlag) Set(value string) error {
+	*h = append(*h, value)
+	return nil
+}
+
+func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string, proxy string, config string, output string, updatePlugins bool, exportCA bool, debug bool, verbose bool, stats bool, headers headersFlag) {
 	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8888)")
     flag.IntVar(&threads, "threads", 8, "threads to use during plugin scan (default: 8)")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
@@ -22,6 +33,7 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, scope string
     flag.BoolVar(&debug, "debug", false, "Return debug error messages")
     flag.BoolVar(&verbose, "v", false, "Verbose output")
     flag.BoolVar(&stats, "stats", false, "Start status server on port 8899")
+    flag.Var(&headers, "headers", "Set custom headers during scans. Accept multiple usages.")
 
     // Add the welcome message to the --help output
 	flag.Usage = func() {
@@ -44,7 +56,7 @@ func PrintFlagsByTopic() {
     topics := map[string][]string{
         "Proxy": []string{"port"},
         "Jaeles": []string{"jc", "jc-api"},
-        "Scan": []string{"config", "proxy", "threads", "out"},
+        "Scan": []string{"config", "proxy", "threads", "headers", "out"},
         "Misc": []string{"update-plugins", "export-ca", "debug", "v", "stats"},
     }
 

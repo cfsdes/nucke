@@ -6,6 +6,9 @@ import (
     "io/ioutil"
     "net/http/httputil"
     "log"
+    "strings"
+
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 /*
@@ -27,6 +30,18 @@ func CloneReq(req *http.Request) *http.Request {
     for key, values := range req.Header {
         for _, value := range values {
             newReq.Header.Add(key, value)
+        }
+    }
+
+    // Add custom headers from --headers parameter
+    if len(initializers.Headers) > 0 {
+        for _, header := range initializers.Headers {
+            parts := strings.SplitN(header, ":", -1)
+            if len(parts) >= 2 {
+                key := strings.TrimSpace(parts[0])
+                value := strings.TrimSpace(strings.Join(parts[1:], ":"))
+                newReq.Header.Set(key, value)
+            }
         }
     }
 

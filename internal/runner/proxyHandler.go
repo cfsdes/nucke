@@ -90,7 +90,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
         // If config with plugins is provided
         if initializers.Config != "" {
             // Clone request before scanning
-            req2 := requests.CloneReq(req)
+            reqScan := requests.CloneReq(req)
             
             // Add request to pendingRequests
             initializers.PendingScans++
@@ -100,7 +100,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
                 // adiciona 1 ao canal para indicar que está utilizando uma goroutine
                 ch <- 1
 
-                ScannerHandler(req2)
+                ScannerHandler(reqScan)
 
                 // Remove request from pendingRequests
                 initializers.PendingScans--
@@ -111,8 +111,11 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
         }
 	} 
 
+    // Clone original request
+    reqCopy := requests.CloneReq(req)
+
     // Defina a lógica para lidar com a requisição aqui
-    return req, nil
+    return reqCopy, nil
 }
 
 // Function to export CA certificates
