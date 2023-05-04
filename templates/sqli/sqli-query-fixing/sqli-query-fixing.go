@@ -34,7 +34,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
     }
 
     // Scan query fixing status code
-    vulnFound, rawReq, url := queryFixingStatusCodeBased(r, client, pluginDir)
+    vulnFound, rawReq, url = queryFixingStatusCodeBased(r, client, pluginDir)
     if vulnFound {
         return vulnFound, rawReq, url
     }
