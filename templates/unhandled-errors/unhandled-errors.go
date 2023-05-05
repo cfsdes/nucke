@@ -28,7 +28,18 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
     
     // Read rules file
     rules := utils.FileToSlice(pluginDir, "regex_match.txt")
-    payloads := utils.FileToSlice(pluginDir, "payloads.txt")
+    payloads := []string{
+        "{{.original}}'",
+        "{{.original}}%",
+        "{{.original}}\"",
+        "{{.original}}\\",
+        "{{.original}}\x00",
+        "{{.original}}\x0A",
+        "{{.original}}\x0D",
+        "{{.original}}\\u0000",
+        "{{.original}}°",
+        "{{.original}}..;",
+    }
 
     // Creating payload and matcher
     matcher := detections.Matcher{
