@@ -12,6 +12,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/parsers"
 )
 
 
@@ -21,8 +22,8 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     // Result channel
     resultChan := make(chan detections.Result)
     
-    // Update payloads {{.oob}} to interact url
-    payloads = initializers.ReplaceOob(payloads)
+    // Update payloads {{.params}}
+    payloads = parsers.ParsePayloads(payloads)
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {

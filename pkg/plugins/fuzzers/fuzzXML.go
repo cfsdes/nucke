@@ -12,6 +12,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/parsers"
 )
 
 func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
@@ -20,8 +21,8 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     // Result channel
     resultChan := make(chan detections.Result)
 
-    // Update payloads {{.oob}} to interact url
-    payloads = initializers.ReplaceOob(payloads)
+    // Update payloads {{.params}}
+    payloads = parsers.ParsePayloads(payloads)
     
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {

@@ -26,10 +26,12 @@ var Verbose bool			// Verbose Output
 var Stats bool				// Start Status server
 var PendingScans int 		// Number of Pending requests
 var Headers []string 		// Custom Headers
+var CustomParams []string 	// Custom parameters to be used during scan
+
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose, Stats, Headers = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose, Stats, Headers, CustomParams = ParseFlags()
 
 	// Initial banner
 	Banner()

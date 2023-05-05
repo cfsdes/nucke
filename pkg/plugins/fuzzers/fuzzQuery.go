@@ -12,13 +12,14 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/parsers"
 )
 
 func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
     
-    // Update payloads {{.oob}} to interact url
-    payloads = initializers.ReplaceOob(payloads)
+    // Update payloads {{.params}}
+    payloads = parsers.ParsePayloads(payloads)
     
     // Extract parameters from URL
     params := req.URL.Query()
