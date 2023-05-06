@@ -27,18 +27,11 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
     
-    // Send Original Request
-    _, resBody, _, _ := requests.BasicRequest(r, client)
-    originalLength := len(resBody)
-
-    // Send unauth request
-    r.Header.Del("Cookie")
-    r.Header.Del("Authorization")
-    _, resBody, _, _ = requests.BasicRequest(r, client)
-    unauthLength := len(resBody)
+    // Check if request requires authentication
+    requireAuth := requests.CheckAuth(r, client)
 
     // Just test IDOR in authenticated endpoints
-    if (unauthLength != originalLength) {
+    if (requireAuth) {
 
         // Replace headers with user custom parameters
         if len(initializers.CustomParams) > 0 {
