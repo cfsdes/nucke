@@ -12,7 +12,7 @@ import (
 
 func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client, pluginDir)
+    vulnFound, rawReq, url := scan(r, client)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -24,45 +24,86 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 }
 
 
-func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func scan(r *http.Request, client *http.Client) (bool, string, string) {
 
     // Check if request requires authentication
     requireAuth := requests.CheckAuth(r, client)
 
     if (requireAuth) {
-        // Format CORS URL
-        hostParts := strings.Split(r.Host, ":")
-        domain := hostParts[0]
-        corsURL := fmt.Sprint("https://", domain, ".example.com")
-
-        // Add CORS headers
-        if r.Header.Get("Origin") != "" {
-            r.Header.Set("Origin", corsURL)
-        } else {
-            r.Header.Add("Origin", corsURL)
-        }
-
-        // Send Request
-        _, _, statusCode, headers := requests.BasicRequest(r, client)
-
-        // Get raw req and URL
-        rawReq := requests.RequestToRaw(r)
-        url := requests.ExtractRawURL(rawReq)
-
-        // Verifica se o mapa de headers contém os headers necessários
-        if statusCode < 300 &&
-        containsHeader(headers, "Access-Control-Allow-Origin", corsURL) &&
-        containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
-            return true, rawReq, url
-        }
-
-        if statusCode < 300 &&
-        containsHeader(headers, "Access-Control-Allow-Origin", "*") &&
-        containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
-            return true, rawReq, url
-        }
+        // Test CORS using Arbitrary Origin
+        found, rawReq, url := arbitraryOriginCheck(r, client)
+        if found { return found, rawReq, url }
+        
+        // Test CORS using Null Origin
+        found, rawReq, url = nullOriginCheck(r, client)
+        if found { return found, rawReq, url }
     }
     
+
+    return false, "", ""
+}
+
+// Test CORS using Arbitrary Origin
+func arbitraryOriginCheck(r *http.Request, client *http.Client) (bool, string, string) {
+    
+    // Format CORS URL
+    hostParts := strings.Split(r.Host, ":")
+    domain := hostParts[0]
+    corsURL := fmt.Sprint("https://", domain, ".example.com")
+
+    // Add CORS headers
+    if r.Header.Get("Origin") != "" {
+        r.Header.Set("Origin", corsURL)
+    } else {
+        r.Header.Add("Origin", corsURL)
+    }
+
+    // Send Request
+    _, _, statusCode, headers := requests.BasicRequest(r, client)
+
+    // Get raw req and URL
+    rawReq := requests.RequestToRaw(r)
+    url := requests.ExtractRawURL(rawReq)
+
+    // Verifica se o mapa de headers contém os headers necessários
+    if statusCode < 300 &&
+    containsHeader(headers, "Access-Control-Allow-Origin", corsURL) &&
+    containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
+        return true, rawReq, url
+    }
+
+    if statusCode < 300 &&
+    containsHeader(headers, "Access-Control-Allow-Origin", "*") &&
+    containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
+        return true, rawReq, url
+    }
+
+    return false, "", ""
+}
+
+// Test CORS using Null Origin
+func nullOriginCheck(r *http.Request, client *http.Client) (bool, string, string) {
+    
+    // Add CORS headers
+    if r.Header.Get("Origin") != "" {
+        r.Header.Set("Origin", "null")
+    } else {
+        r.Header.Add("Origin", "null")
+    }
+
+    // Send Request
+    _, _, statusCode, headers := requests.BasicRequest(r, client)
+
+    // Get raw req and URL
+    rawReq := requests.RequestToRaw(r)
+    url := requests.ExtractRawURL(rawReq)
+
+    // Verifica se o mapa de headers contém os headers necessários
+    if statusCode < 300 &&
+    containsHeader(headers, "Access-Control-Allow-Origin", "null") &&
+    containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
+        return true, rawReq, url
+    }
 
     return false, "", ""
 }
