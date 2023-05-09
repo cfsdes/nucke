@@ -60,7 +60,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         _, resBody, _, _ = requests.BasicRequest(r, client)
         anotherLength := len(resBody)
 
-        if (originalLength == anotherLength){
+        if ((originalLength == anotherLength) && (originalLength > 1000)){
             rawReq := requests.RequestToRaw(r)
             url := requests.ExtractRawURL(rawReq)
 

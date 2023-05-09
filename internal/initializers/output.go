@@ -38,7 +38,7 @@ func VulnerabilityOutput(scanName string, severity string, url string, summary s
 
 	// Create output
 	if Output != "" {
-		outputPath := getOutputPath(url, scanName)
+		outputPath := getOutputPath(url, scanName, summary)
 
 		err := writeStringToFile(summary, outputPath)
 		if err != nil {
@@ -82,13 +82,13 @@ func getDomain(urlString string) string {
 }
 
 // Function to return the outputPath
-func getOutputPath(urlString string, scanName string) string {
+func getOutputPath(urlString string, scanName string, summary string) string {
 	// parse domain
 	domain := getDomain(urlString)
 
 	// generate random SHA1 hash
-	randomString := generateRandomString(10)
-	hash := sha1.Sum([]byte(randomString))
+	signatureString := fmt.Sprintf("%s-%s-%s", len(summary), urlString, scanName)
+	hash := sha1.Sum([]byte(signatureString))
 	hashString := hex.EncodeToString(hash[:])
 
 	// filename
@@ -101,10 +101,17 @@ func getOutputPath(urlString string, scanName string) string {
 
 // Function to write string to file
 func writeStringToFile(text string, filePath string) error {
+	// Check if file already exists
+	if _, err := os.Stat(filePath); err == nil {
+		// File already exists, return without writing to it
+		return nil
+	}
+
 	err := os.MkdirAll(filepath.Dir(filePath), 0755)
 	if err != nil {
 		return err
 	}
+	
 	err = ioutil.WriteFile(filePath, []byte(text), 0644)
 	if err != nil {
 		return err
