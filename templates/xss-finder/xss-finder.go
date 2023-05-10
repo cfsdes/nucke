@@ -42,7 +42,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
             RegexList: rules,
         },
         Header: &detections.HeaderMatcher{
-            RegexList: []string{"text/html", "text/plain"},
+            RegexList: []string{"text/html"},
         },
     }
 
