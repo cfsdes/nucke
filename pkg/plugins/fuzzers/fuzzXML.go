@@ -21,9 +21,6 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     // Result channel
     resultChan := make(chan detections.Result)
 
-    // Update payloads {{.params}}
-    payloads = parsers.ParsePayloads(payloads)
-    
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
         return false, "", "", "", ""
@@ -46,6 +43,10 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     matches := re.FindAllStringSubmatch(string(body), -1)
     for _, match := range matches {
         for _, payload := range payloads {
+
+            // Update payloads {{.params}}
+            payload = parsers.ParsePayload(payload)
+
             // Copy Request
             reqCopy := requests.CloneReq(req)
 

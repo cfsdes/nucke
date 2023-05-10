@@ -7,7 +7,7 @@ import (
 	"github.com/cfsdes/nucke/internal/initializers"
 )
 
-func ParsePayloads(payloads []string) []string {
+func ParsePayload(payload string) string {
 
 	// Replace custom parameters
     if len(initializers.CustomParams) > 0 {
@@ -17,19 +17,16 @@ func ParsePayloads(payloads []string) []string {
                 key := fmt.Sprintf("{{.%s}}", strings.TrimSpace(parts[0]))
                 value := strings.TrimSpace(strings.Join(parts[1:], "="))
 
-				// ...
-				for i, s := range payloads {
-					// Verify if element has string "{{.oob}}"
-					if strings.Contains(s, key) {
-						payloads[i] = strings.ReplaceAll(s, key, value)
-					}
+				// Verify if element has string "{{.oob}}"
+				if strings.Contains(payload, key) {
+					payload = strings.ReplaceAll(payload, key, value)
 				}
             }
         }
     }
 
 	// Replace {{.oob}} with interactsh url
-	payloads = initializers.ReplaceOob(payloads)
+	payload = initializers.ReplaceOob(payload)
 
-	return payloads
+	return payload
 }

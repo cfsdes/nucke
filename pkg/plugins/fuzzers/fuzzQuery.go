@@ -18,9 +18,6 @@ import (
 func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
     
-    // Update payloads {{.params}}
-    payloads = parsers.ParsePayloads(payloads)
-    
     // Extract parameters from URL
     params := req.URL.Query()
 
@@ -45,6 +42,10 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
     for key, _ := range params {
         // Create a new query string with the parameter replaced by a payload
         for _, payload := range payloads {
+
+            // Update payloads {{.params}}
+            payload = parsers.ParsePayload(payload)
+
             newParams := make(url.Values)
             for k, v := range params {
                 if k == key {

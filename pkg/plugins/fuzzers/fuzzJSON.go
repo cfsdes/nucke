@@ -22,9 +22,6 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     // Result channel
     resultChan := make(chan detections.Result)
     
-    // Update payloads {{.params}}
-    payloads = parsers.ParsePayloads(payloads)
-    
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
         return false, "", "", "", ""
@@ -50,6 +47,8 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
 
     for key, value := range jsonData {
         for _, payload := range payloads {
+            // Update payloads {{.params}}
+            payload = parsers.ParsePayload(payload)
             
             // Check if value is map. If yes, recursively check it to inject payload
             addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher)

@@ -15,9 +15,6 @@ import (
 
 func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
-
-    // Update payloads {{.params}}
-    payloads = parsers.ParsePayloads(payloads)
     
     // Result channel
     resultChan := make(chan detections.Result)
@@ -41,6 +38,10 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
     // For each parameter, send a new request with the parameter replaced by a payload
     for key, values := range req.PostForm {
         for _, payload := range payloads {
+
+            // Update payloads {{.params}}
+            payload = parsers.ParsePayload(payload)
+            
             
             // Create a new request body with the parameter replaced by a payload
             var newBody string

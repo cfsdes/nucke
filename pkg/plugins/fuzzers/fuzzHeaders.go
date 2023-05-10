@@ -17,9 +17,6 @@ import (
 func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher) (bool, string, string, string, string) {
     req := requests.CloneReq(r)
 
-    // Update payloads {{.params}}
-    payloads = parsers.ParsePayloads(payloads)
-    
     // Result channel
     resultChan := make(chan detections.Result)
 
@@ -41,6 +38,10 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
     for _, header := range headers {
         // Create a new request with the header replaced by a payload
         for _, payload := range payloads {
+            
+            // Update payloads {{.params}}
+            payload = parsers.ParsePayload(payload)
+
             req2 := requests.CloneReq(req)
 
             currentValue := req.Header.Get(header)

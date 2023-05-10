@@ -75,17 +75,14 @@ func StartInteractsh() string {
 }
 
 // Replace {{.oob}} with interactSH URL
-func ReplaceOob(arr []string) []string {
-	for i, s := range arr {
-		// Verify if element has string "{{.oob}}"
-		if strings.Contains(s, "{{.oob}}") {
-			// Replace "{{.oob}}" with random ID + interactURL
-            id := fmt.Sprintf("%08d", rand.Intn(100000000))
-			arr[i] = strings.ReplaceAll(s, "{{.oob}}", id+"."+interactURL)
-		}
-	}
+func ReplaceOob(payload string) string {
+    if strings.Contains(payload, "{{.oob}}") {
+        // Replace "{{.oob}}" with random ID + interactURL
+        id := fmt.Sprintf("%08d", rand.Intn(100000000))
+        payload = strings.ReplaceAll(payload, "{{.oob}}", id+"."+interactURL)
+    }
 
-	return arr
+	return payload
 }
 
 // Extract OOB ID
