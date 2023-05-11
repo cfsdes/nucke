@@ -11,6 +11,7 @@ import (
     "os"
     "encoding/pem"
     "io/ioutil"
+    "sync/atomic"
 
     "github.com/fatih/color"
     "github.com/cfsdes/nucke/internal/initializers"
@@ -93,7 +94,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
             reqScan := requests.CloneReq(req)
             
             // Add request to pendingRequests
-            initializers.PendingScans++
+            atomic.AddInt64(&initializers.PendingScans, 1)
 
             // executa a ScannerHandler dentro de uma goroutine
             go func() {
@@ -103,7 +104,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
                 ScannerHandler(reqScan)
 
                 // Remove request from pendingRequests
-                initializers.PendingScans--
+                atomic.AddInt64(&initializers.PendingScans, -1)
                 
                 // sinaliza ao canal que a goroutine está livre
                 <-ch

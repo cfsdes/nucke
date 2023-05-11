@@ -24,7 +24,7 @@ var ExportCA bool			// Export PEM certificate
 var Debug bool 				// Debug Error messages
 var Verbose bool			// Verbose Output
 var Stats bool				// Start Status server
-var PendingScans int 		// Number of Pending requests
+var PendingScans int64 		// Number of Pending requests
 var Headers []string 		// Custom Headers
 var CustomParams []string 	// Custom parameters to be used during scan
 
