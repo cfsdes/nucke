@@ -12,7 +12,7 @@ import (
 * Just reproduce the request provided
 */
 
-func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[string][]string) {
+func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[string][]string, string) {
     req := CloneReq(r)
 
     if client == nil {
@@ -26,14 +26,14 @@ func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[s
         if initializers.Debug {
             fmt.Println("Basic Request Error:",err)
         }
-        return 0, "", 0, nil
+        return 0, "", 0, nil, ""
     }
 
     // Get response body
-    statusCode, responseBody, responseHeaders, _ := ParseResponse(resp)
+    statusCode, responseBody, responseHeaders, rawResponse := ParseResponse(resp)
 	
     // Get response time
     elapsed := int(time.Since(start).Seconds())
 
-    return elapsed, responseBody, statusCode, responseHeaders
+    return elapsed, responseBody, statusCode, responseHeaders, rawResponse
 }

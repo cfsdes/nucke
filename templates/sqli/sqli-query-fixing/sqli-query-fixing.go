@@ -46,7 +46,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
 func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
     
     // Make basic request
-    _, resBody, _, _ := requests.BasicRequest(r, client)
+    _, resBody, _, _, _ := requests.BasicRequest(r, client)
     originalLength := len(resBody)
 
     // Payloads
@@ -133,7 +133,7 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
 func queryFixingStatusCodeBased(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
     
     // Make basic request
-    _, _, originalStatusCode, _ := requests.BasicRequest(r, client)
+    _, _, originalStatusCode, _, _ := requests.BasicRequest(r, client)
 
     // Compare the original length with the length with payload
     payload1 := []string{"{{.original}}'"}

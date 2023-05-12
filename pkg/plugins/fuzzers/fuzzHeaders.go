@@ -14,7 +14,7 @@ import (
     "github.com/cfsdes/nucke/internal/parsers"
 )
 
-func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher) (bool, string, string, string, string) {
+func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -30,7 +30,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
             if initializers.Debug {
                 fmt.Println("fuzzHeaders:",err)
             }
-            return false, "", "", "", ""
+            return false, "", "", "", "", ""
         }
     }
 
@@ -64,7 +64,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
                 if initializers.Debug {
                     fmt.Println("fuzzHeaders:",err)
                 }
-                return false, "", "", "", ""
+                return false, "", "", "", "", ""
             }
 
             // Get response time
@@ -86,7 +86,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
         }
     }
 
-    return false, "", "", "", ""
+    return false, "", "", "", "", ""
 }
 
 

@@ -15,7 +15,7 @@ import (
     "github.com/cfsdes/nucke/internal/parsers"
 )
 
-func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
+func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
     req := requests.CloneReq(r)
     
     // Extract parameters from URL
@@ -34,7 +34,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             if initializers.Debug {
                 fmt.Println("fuzzQuery:",err)
             }
-            return false, "", "", "", ""
+            return false, "", "", "", "", ""
         }
     }
 
@@ -76,7 +76,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
                 if initializers.Debug {
                     fmt.Println("fuzzQuery:",err)
                 }
-                return false, "", "", "", ""
+                return false, "", "", "", "", ""
             }
             
             // Get response time
@@ -98,5 +98,5 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
         }
     }
 
-    return false, "", "", "", ""
+    return false, "", "", "", "", ""
 }

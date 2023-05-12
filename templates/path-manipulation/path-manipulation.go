@@ -27,7 +27,7 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
 
     // Make basic request
-    _, resBody, _, _ := requests.BasicRequest(r, client)
+    _, resBody, _, _, _ := requests.BasicRequest(r, client)
     originalLength := len(resBody)
 
     // Compare the original length with the length with payload

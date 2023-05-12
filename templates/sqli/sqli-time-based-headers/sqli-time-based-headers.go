@@ -28,7 +28,7 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
     
     // Make basic request
-    originalResTime, _, _, _ := requests.BasicRequest(r, client)
+    originalResTime, _, _, _, _ := requests.BasicRequest(r, client)
 
     if originalResTime < 20 {
         payloads := utils.FileToSlice(pluginDir, "payloads.txt")

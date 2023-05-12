@@ -15,7 +15,7 @@ import (
     "github.com/cfsdes/nucke/internal/parsers"
 )
 
-func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
+func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -23,7 +23,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
 
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
-        return false, "", "", "", ""
+        return false, "", "", "", "", ""
     }
 
     // Get request body
@@ -32,7 +32,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
         if initializers.Debug {
             fmt.Println("fuzzXML:",err)
         }
-        return false, "", "", "", ""
+        return false, "", "", "", "", ""
     }
 
     // Restore request body
@@ -69,7 +69,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
                 if initializers.Debug {
                     fmt.Println("fuzzXML:",err)
                 }
-                return false, "", "", "", ""
+                return false, "", "", "", "", ""
             }
 
             // Get response time
@@ -91,7 +91,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
         }
     }
 
-    return false, "", "", "", ""
+    return false, "", "", "", "", ""
 }
 
 

@@ -34,7 +34,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
     if (requireAuth) {
         
         // Send basic request
-        _, resBody, _, _ := requests.BasicRequest(r, client)
+        _, resBody, _, _, _ := requests.BasicRequest(r, client)
         originalLength := len(resBody)
 
         // Replace headers with user custom parameters
@@ -57,7 +57,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         }
 
         // Send request with Cookies of Account B
-        _, resBody, _, _ = requests.BasicRequest(r, client)
+        _, resBody, _, _, _ = requests.BasicRequest(r, client)
         anotherLength := len(resBody)
 
         if (originalLength == anotherLength){

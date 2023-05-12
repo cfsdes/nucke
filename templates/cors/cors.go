@@ -10,9 +10,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client)
+    vulnFound, rawReq, url, rawResp := scan(r, client)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -20,31 +20,31 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"Medium", url, summary, vulnFound, nil
+    return	"Medium", url, summary, vulnFound, rawResp, nil
 }
 
 
-func scan(r *http.Request, client *http.Client) (bool, string, string) {
+func scan(r *http.Request, client *http.Client) (bool, string, string, string) {
 
     // Check if request requires authentication
     requireAuth := requests.CheckAuth(r, client)
 
     if (requireAuth) {
         // Test CORS using Arbitrary Origin
-        found, rawReq, url := arbitraryOriginCheck(r, client)
-        if found { return found, rawReq, url }
+        found, rawReq, url, rawResp := arbitraryOriginCheck(r, client)
+        if found { return found, rawReq, url, rawResp }
         
         // Test CORS using Null Origin
-        found, rawReq, url = nullOriginCheck(r, client)
-        if found { return found, rawReq, url }
+        found, rawReq, url, rawResp = nullOriginCheck(r, client)
+        if found { return found, rawReq, url, rawResp }
     }
     
 
-    return false, "", ""
+    return false, "", "", ""
 }
 
 // Test CORS using Arbitrary Origin
-func arbitraryOriginCheck(r *http.Request, client *http.Client) (bool, string, string) {
+func arbitraryOriginCheck(r *http.Request, client *http.Client) (bool, string, string, string) {
     
     // Format CORS URL
     hostParts := strings.Split(r.Host, ":")
@@ -55,7 +55,7 @@ func arbitraryOriginCheck(r *http.Request, client *http.Client) (bool, string, s
     r.Header.Set("Origin", corsURL)
 
     // Send Request
-    _, _, statusCode, headers := requests.BasicRequest(r, client)
+    _, _, statusCode, headers, rawResp := requests.BasicRequest(r, client)
 
     // Get raw req and URL
     rawReq := requests.RequestToRaw(r)
@@ -65,20 +65,20 @@ func arbitraryOriginCheck(r *http.Request, client *http.Client) (bool, string, s
     if statusCode < 300 &&
     containsHeader(headers, "Access-Control-Allow-Origin", corsURL) &&
     containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
-        return true, rawReq, url
+        return true, rawReq, url, rawResp
     }
 
     if statusCode < 300 &&
     containsHeader(headers, "Access-Control-Allow-Origin", "*") &&
     containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
-        return true, rawReq, url
+        return true, rawReq, url, rawResp
     }
 
-    return false, "", ""
+    return false, "", "", ""
 }
 
 // Test CORS using Null Origin
-func nullOriginCheck(r *http.Request, client *http.Client) (bool, string, string) {
+func nullOriginCheck(r *http.Request, client *http.Client) (bool, string, string, string) {
     
     // Add CORS headers
     if r.Header.Get("Origin") != "" {
@@ -88,7 +88,7 @@ func nullOriginCheck(r *http.Request, client *http.Client) (bool, string, string
     }
 
     // Send Request
-    _, _, statusCode, headers := requests.BasicRequest(r, client)
+    _, _, statusCode, headers, rawResp := requests.BasicRequest(r, client)
 
     // Get raw req and URL
     rawReq := requests.RequestToRaw(r)
@@ -98,10 +98,10 @@ func nullOriginCheck(r *http.Request, client *http.Client) (bool, string, string
     if statusCode < 300 &&
     containsHeader(headers, "Access-Control-Allow-Origin", "null") &&
     containsHeader(headers, "Access-Control-Allow-Credentials", "true") {
-        return true, rawReq, url
+        return true, rawReq, url, rawResp
     }
 
-    return false, "", ""
+    return false, "", "", ""
 }
 
 

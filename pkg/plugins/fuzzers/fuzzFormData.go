@@ -13,7 +13,7 @@ import (
     "github.com/cfsdes/nucke/internal/parsers"
 )
 
-func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
+func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
     req := requests.CloneReq(r)
     
     // Result channel
@@ -21,7 +21,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
 
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-        return false, "", "", "", ""
+        return false, "", "", "", "", ""
     }
 
     // Get form data parameters from request body
@@ -29,7 +29,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
         if initializers.Debug {
             fmt.Println("fuzzFormData:",err)
         }
-        return false, "", "", "", "" 
+        return false, "", "", "", "", "" 
     }
 
     // Get request body
@@ -58,7 +58,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
                 if initializers.Debug {
                     fmt.Println("fuzzFormData:",err)
                 }
-                return false, "", "", "", ""
+                return false, "", "", "", "", ""
             }
 
             // Copy headers from original request to new request
@@ -74,7 +74,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
                 if initializers.Debug {
                     fmt.Println("fuzzFormData:",err)
                 }
-                return false, "", "", "", ""
+                return false, "", "", "", "", ""
             }
 
             // Get response time
@@ -96,6 +96,6 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
         }
     }
 
-    return false, "", "", "", ""
+    return false, "", "", "", "", ""
 }
 

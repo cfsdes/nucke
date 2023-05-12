@@ -89,7 +89,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
     scanName = strings.TrimPrefix(scanName, ".") // e.g: sqli
 
     // Call the run() function with a req argument
-	severity, url, summary, found, err := runFunc.(func(*http.Request, *http.Client, string) (string, string, string, bool, error))(req, client, pluginDir)
+	severity, url, summary, found, _, err := runFunc.(func(*http.Request, *http.Client, string) (string, string, string, bool, string, error))(req, client, pluginDir)
     if err != nil {
         fmt.Println("Error running plugin:", err)
         os.Exit(1)

@@ -16,7 +16,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string) {
+func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -24,7 +24,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
-        return false, "", "", "", ""
+        return false, "", "", "", "", ""
     }
 
     // Read request body
@@ -33,7 +33,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         if initializers.Debug {
             fmt.Println("fuzzJSON:",err)
         }
-        return false, "", "", "", ""
+        return false, "", "", "", "", ""
     }
 
     // Create obj based on json data
@@ -42,7 +42,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         if initializers.Debug {
             fmt.Println("fuzzJSON:",err)
         }
-        return false, "", "", "", ""
+        return false, "", "", "", "", ""
     }
 
     for key, value := range jsonData {
@@ -63,7 +63,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         }
     }
 
-    return false, "", "", "", ""
+    return false, "", "", "", "", ""
 }
 
 // function to add payload to JSON
