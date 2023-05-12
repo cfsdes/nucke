@@ -3,3 +3,4 @@ templates/**/*.so
 nucke
 config.yaml
 nucke-cert.crt
+output/
