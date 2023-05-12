@@ -30,7 +30,7 @@ func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[s
     }
 
     // Get response body
-    statusCode, responseBody, responseHeaders := ParseResponse(resp)
+    statusCode, responseBody, responseHeaders, _ := ParseResponse(resp)
 	
     // Get response time
     elapsed := int(time.Since(start).Seconds())

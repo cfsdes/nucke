@@ -82,7 +82,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
     for i := 0; i < len(headers)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
         }
     }
 

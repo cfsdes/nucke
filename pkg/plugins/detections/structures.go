@@ -41,4 +41,5 @@ type Result struct {
 	URL string
 	Payload string
 	Param string
+	RawResp string
 }

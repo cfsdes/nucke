@@ -92,7 +92,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
     for i := 0; i < len(req.PostForm)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
         }
     }
 

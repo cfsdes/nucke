@@ -59,7 +59,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     for i := 0; i < len(jsonData)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
         }
     }
 

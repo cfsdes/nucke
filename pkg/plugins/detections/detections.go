@@ -14,7 +14,7 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 	url := requests.ExtractRawURL(rawReq)
 	
 	foundArray := make([]bool, 0)
-	statusCode, resBody, resHeaders := requests.ParseResponse(resp)
+	statusCode, resBody, resHeaders, rawResp := requests.ParseResponse(resp)
 
 	// Verifying if all rules matched
 	if m.Body != nil {
@@ -53,19 +53,19 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 					break
 				}
 			}
-			resultChan <- Result{allTrue, rawReq, url, payload, parameter}
+			resultChan <- Result{allTrue, rawReq, url, payload, parameter, rawResp}
 
 		// OR condition
 		} else if m.Operator == "OR" {
 			for _, value := range foundArray {
 				if value {
-					resultChan <- Result{true, rawReq, url, payload, parameter}
+					resultChan <- Result{true, rawReq, url, payload, parameter, rawResp}
 				}
 			}
-			resultChan <- Result{false, rawReq, url, payload, parameter}
+			resultChan <- Result{false, rawReq, url, payload, parameter, rawResp}
 		}
 	} else {
-		resultChan <- Result{false, "", "", "", ""}
+		resultChan <- Result{false, "", "", "", "", ""}
 	}
 }
 

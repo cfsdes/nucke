@@ -7,16 +7,17 @@ import (
 	"compress/gzip"
 	"compress/flate"
 	"net/http"
+	"strings"
 
 	"github.com/cfsdes/nucke/internal/initializers"
 )
 
 // Parse response
-func ParseResponse(resp *http.Response) (int, string, map[string][]string) {
+func ParseResponse(resp *http.Response) (int, string, map[string][]string, string) {
 	
 	// Check if resp is nil
 	if resp == nil {
-        return 0, "", nil
+        return 0, "", nil, ""
     }
 
 	// Get status code
@@ -31,7 +32,10 @@ func ParseResponse(resp *http.Response) (int, string, map[string][]string) {
         responseHeaders[k] = v
     }
 
-	return statusCode, responseBody, responseHeaders
+	// Get Raw Response
+	rawResp := createRawResponse(resp, responseBody)
+
+	return statusCode, responseBody, responseHeaders, rawResp
 }
 
 func getBody(resp *http.Response) string {
@@ -63,4 +67,28 @@ func getBody(resp *http.Response) string {
 	}
 
 	return string(bodyBytes)
+}
+
+func createRawResponse(resp *http.Response, body string) string {
+	
+	// Write the response status line
+    raw := fmt.Sprintf("%s %d %s\r\n", resp.Proto, resp.StatusCode, http.StatusText(resp.StatusCode))
+
+    // Write the headers
+    for name, values := range resp.Header {
+        for _, value := range values {
+            raw += fmt.Sprintf("%s: %s\r\n", name, value)
+        }
+    }
+
+    // Write a blank line to end the headers
+    raw += "\r\n"
+
+    // Write the body, if present
+    raw += body
+
+    // Replace any occurrences of "\r\n" with "\n"
+    raw = strings.ReplaceAll(raw, "\r\n", "\n")
+
+    return raw
 }
