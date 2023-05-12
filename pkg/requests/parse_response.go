@@ -13,6 +13,12 @@ import (
 
 // Parse response
 func ParseResponse(resp *http.Response) (int, string, map[string][]string) {
+	
+	// Check if resp is nil
+	if resp == nil {
+        return 0, "", nil
+    }
+
 	// Get status code
     statusCode := resp.StatusCode
 
