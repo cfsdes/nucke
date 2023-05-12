@@ -9,9 +9,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -19,12 +19,12 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"Info", url, summary, vulnFound, nil
+    return	"Info", url, summary, vulnFound, rawResp, nil
 }
 
 
 // Running all Fuzzers
-func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
 
     // Make basic request
     _, resBody, _, _, _ := requests.BasicRequest(r, client)
@@ -39,7 +39,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         },
     }
 
-    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string){
+    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string){
         fuzzers.FuzzJSON,
         fuzzers.FuzzQuery,
         fuzzers.FuzzFormData,
@@ -47,7 +47,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
     }
 
     for _, fuzzer := range fuzzers {
-        if match1, _, _, _, param1 := fuzzer(r, client, payload1, matcher); match1 {
+        if match1, _, _, _, param1, _ := fuzzer(r, client, payload1, matcher); match1 {
             /*
                 If length with payload is different of original length,
                 Try to "fix" the query. If the payload with query fixing in the same parameter
@@ -63,15 +63,15 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
             }
 
             for _, fuzzer := range fuzzers {
-                if vulnFound, rawReq, url, _, param2 := fuzzer(r, client, payload2, matcher2); vulnFound {
+                if vulnFound, rawReq, url, _, param2, rawResp := fuzzer(r, client, payload2, matcher2); vulnFound {
                     if param2 == param1 {
-                        return vulnFound, rawReq, url
+                        return vulnFound, rawReq, url, rawResp
                     }
                 }
             }
         }
     }
     
-    return false, "", ""
+    return false, "", "", ""
     
 }

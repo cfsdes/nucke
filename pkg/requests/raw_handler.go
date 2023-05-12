@@ -6,6 +6,9 @@ import (
     "io/ioutil"
     "strings"
     "bufio"
+    "strconv"
+
+    "github.com/cfsdes/nucke/internal/initializers"
 )
 
 func RequestToRaw(r *http.Request) string {
@@ -82,4 +85,38 @@ func ExtractRawURL(rawRequest string) string {
     } else {
         return ""
     }
+}
+
+// Return Status Code from Raw Response
+func StatusCodeFromRaw(raw string) (int) {
+
+    // Split the raw string into lines
+    lines := strings.Split(raw, "\n")
+
+    // Check if the first line contains a valid status line
+    if len(lines) < 1 {
+        if initializers.Debug {
+            fmt.Printf("Invalid Raw Response: empty string")
+        }
+        return 0
+    }
+
+    parts := strings.SplitN(lines[0], " ", 3)
+    if len(parts) != 3 {
+        if initializers.Debug {
+            fmt.Printf("Invalid Raw Response: invalid status line: %s", lines[0])
+        }
+        return 0
+    }
+
+    // Parse the status code and return it
+    statusCode, err := strconv.Atoi(parts[1])
+    if err != nil {
+        if initializers.Debug {
+            fmt.Printf("Invalid Raw Response: invalid status code: %s", parts[1])
+        }
+        return 0
+    }
+
+    return statusCode
 }

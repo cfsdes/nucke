@@ -10,9 +10,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -20,30 +20,30 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"High", url, summary, vulnFound, nil
+    return	"High", url, summary, vulnFound, rawResp, nil
 }
 
 
 // Running all Fuzzers
-func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
 
     // Scan query fixing content length >= & <=
-    vulnFound, rawReq, url := queryFixingContentLengthBased(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp := queryFixingContentLengthBased(r, client, pluginDir)
     if vulnFound {
-        return vulnFound, rawReq, url
+        return vulnFound, rawReq, url, rawResp
     }
 
     // Scan query fixing status code
-    vulnFound, rawReq, url = queryFixingStatusCodeBased(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp = queryFixingStatusCodeBased(r, client, pluginDir)
     if vulnFound {
-        return vulnFound, rawReq, url
+        return vulnFound, rawReq, url, rawResp
     }
 
-    return false, "", ""
+    return false, "", "", ""
     
 }
 
-func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
     
     // Make basic request
     _, resBody, _, _, _ := requests.BasicRequest(r, client)
@@ -67,7 +67,7 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
     }
 
     // Fuzzing
-    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string){
+    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string){
         fuzzers.FuzzJSON,
         fuzzers.FuzzQuery,
         fuzzers.FuzzFormData,
@@ -76,7 +76,7 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
 
     // Compare the original length with the length with payload
     for _, fuzzer := range fuzzers {
-        if match1, _, _, _, param1 := fuzzer(r, client, payload1, matcher); match1 {
+        if match1, _, _, _, param1, _ := fuzzer(r, client, payload1, matcher); match1 {
             /*
                 If length with payload is >= original length + 200,
                 Try to "fix" the query. If the payload with query fixing in the same parameter
@@ -92,9 +92,9 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
             }
 
             for _, fuzzer := range fuzzers {
-                if vulnFound, rawReq, url, _, param2 := fuzzer(r, client, payload2, matcher2); vulnFound {
+                if vulnFound, rawReq, url, _, param2, rawResp := fuzzer(r, client, payload2, matcher2); vulnFound {
                     if param2 == param1 {
-                        return vulnFound, rawReq, url
+                        return vulnFound, rawReq, url, rawResp
                     }
                 }
             }
@@ -102,7 +102,7 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
     }
 
     for _, fuzzer := range fuzzers {
-        if match1, _, _, _, param1 := fuzzer(r, client, payload1, matcher2); match1 {
+        if match1, _, _, _, param1, _ := fuzzer(r, client, payload1, matcher2); match1 {
             /*
                 If length with payload is <= original length - 200,
                 Try to "fix" the query. If the payload with query fixing in the same parameter
@@ -118,19 +118,19 @@ func queryFixingContentLengthBased(r *http.Request, client *http.Client, pluginD
             }
 
             for _, fuzzer := range fuzzers {
-                if vulnFound, rawReq, url, _, param2 := fuzzer(r, client, payload2, matcher2); vulnFound {
+                if vulnFound, rawReq, url, _, param2, rawResp := fuzzer(r, client, payload2, matcher2); vulnFound {
                     if param2 == param1 {
-                        return vulnFound, rawReq, url
+                        return vulnFound, rawReq, url, rawResp
                     }
                 }
             }
         }
     }
     
-    return false, "", ""
+    return false, "", "", ""
 }
 
-func queryFixingStatusCodeBased(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func queryFixingStatusCodeBased(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
     
     // Make basic request
     _, _, originalStatusCode, _, _ := requests.BasicRequest(r, client)
@@ -144,7 +144,7 @@ func queryFixingStatusCodeBased(r *http.Request, client *http.Client, pluginDir 
         },
     }
 
-    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string){
+    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string){
         fuzzers.FuzzJSON,
         fuzzers.FuzzQuery,
         fuzzers.FuzzFormData,
@@ -152,7 +152,7 @@ func queryFixingStatusCodeBased(r *http.Request, client *http.Client, pluginDir 
     }
 
     for _, fuzzer := range fuzzers {
-        if match1, _, _, _, param1 := fuzzer(r, client, payload1, matcher); match1 {
+        if match1, _, _, _, param1, _ := fuzzer(r, client, payload1, matcher); match1 {
             /*
                 If length with payload is different of original status code,
                 Try to "fix" the query. If the payload with query fixing in the same parameter
@@ -168,14 +168,14 @@ func queryFixingStatusCodeBased(r *http.Request, client *http.Client, pluginDir 
             }
 
             for _, fuzzer := range fuzzers {
-                if vulnFound, rawReq, url, _, param2 := fuzzer(r, client, payload2, matcher2); vulnFound {
+                if vulnFound, rawReq, url, _, param2, rawResp := fuzzer(r, client, payload2, matcher2); vulnFound {
                     if param2 == param1 {
-                        return vulnFound, rawReq, url
+                        return vulnFound, rawReq, url, rawResp
                     }
                 }
             }
         }
     }
     
-    return false, "", ""
+    return false, "", "", ""
 }

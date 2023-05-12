@@ -11,9 +11,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -21,11 +21,11 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"Medium", url, summary, vulnFound, nil
+    return	"Medium", url, summary, vulnFound, rawResp, nil
 }
 
 
-func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
     
     // Check if request requires authentication
     requireAuth := requests.CheckAuth(r, client)
@@ -57,16 +57,16 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         }
 
         // Send request with Cookies of Account B
-        _, resBody, _, _, _ = requests.BasicRequest(r, client)
+        _, resBody, _, _, rawResp := requests.BasicRequest(r, client)
         anotherLength := len(resBody)
 
         if (originalLength == anotherLength){
             rawReq := requests.RequestToRaw(r)
             url := requests.ExtractRawURL(rawReq)
 
-            return true, rawReq, url
+            return true, rawReq, url, rawResp
         }
     }
     
-    return false, "", ""
+    return false, "", "", ""
 }

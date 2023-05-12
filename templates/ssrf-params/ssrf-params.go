@@ -10,9 +10,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client)
+    vulnFound, rawReq, url, rawResp := scan(r, client)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -20,12 +20,12 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"Medium", url, summary, vulnFound, nil
+    return	"Medium", url, summary, vulnFound, rawResp, nil
 }
 
 
 // Running all Fuzzers
-func scan(r *http.Request, client *http.Client) (bool, string, string) {
+func scan(r *http.Request, client *http.Client) (bool, string, string, string) {
     
     // Format OOB URL
     hostParts := strings.Split(r.Host, ":")
@@ -36,7 +36,7 @@ func scan(r *http.Request, client *http.Client) (bool, string, string) {
     payloads := []string{"https://"+oobURL, oobURL, "root@"+oobURL}
     matcher := detections.Matcher{OOB: true}
 
-    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string){
+    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string){
         fuzzers.FuzzJSON,
         fuzzers.FuzzQuery,
         fuzzers.FuzzFormData,
@@ -44,10 +44,10 @@ func scan(r *http.Request, client *http.Client) (bool, string, string) {
     }
 
     for _, fuzzer := range fuzzers {
-        if vulnFound, rawReq, url, _, _ := fuzzer(r, client, payloads, matcher); vulnFound {
-            return vulnFound, rawReq, url
+        if vulnFound, rawReq, url, _, _, rawResp := fuzzer(r, client, payloads, matcher); vulnFound {
+            return vulnFound, rawReq, url, rawResp
         }
     }
 
-    return false, "", ""
+    return false, "", "", ""
 }

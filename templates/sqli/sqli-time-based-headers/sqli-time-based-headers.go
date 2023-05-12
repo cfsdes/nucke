@@ -10,9 +10,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -20,12 +20,12 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"High", url, summary, vulnFound, nil
+    return	"High", url, summary, vulnFound, rawResp, nil
 }
 
 
 // Running all Fuzzers
-func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
     
     // Make basic request
     originalResTime, _, _, _, _ := requests.BasicRequest(r, client)
@@ -40,12 +40,12 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         }
 
         headers := []string{"User-Agent","X-Forwarded-For"}
-        match, rawReq, url, _, _ := fuzzers.FuzzHeaders(r, client, payloads, headers, matcher)
+        match, rawReq, url, _, _, rawResp := fuzzers.FuzzHeaders(r, client, payloads, headers, matcher)
 
         if match {
-            return match, rawReq, url
+            return match, rawReq, url, rawResp
         }
     }
 
-    return false, "", ""
+    return false, "", "", ""
 }

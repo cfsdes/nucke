@@ -12,6 +12,7 @@ import (
     "crypto/tls"
 
 	"github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/pkg/requests"
 )
 
 func ScannerHandler(req *http.Request) {
@@ -89,14 +90,17 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
     scanName = strings.TrimPrefix(scanName, ".") // e.g: sqli
 
     // Call the run() function with a req argument
-	severity, url, summary, found, _, err := runFunc.(func(*http.Request, *http.Client, string) (string, string, string, bool, string, error))(req, client, pluginDir)
+	severity, url, summary, found, rawResp, err := runFunc.(func(*http.Request, *http.Client, string) (string, string, string, bool, string, error))(req, client, pluginDir)
     if err != nil {
         fmt.Println("Error running plugin:", err)
         os.Exit(1)
     }
 
+    // Get Response Staus Code
+    resStatusCode := requests.StatusCodeFromRaw(rawResp)
+
 	// Parse output if vulnerability is found
-	if found {
+	if found && resStatusCode != 429 {
 		initializers.VulnerabilityOutput(scanName, severity, url, summary)
 	}
 }

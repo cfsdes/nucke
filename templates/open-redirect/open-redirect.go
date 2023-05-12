@@ -10,9 +10,9 @@ import (
 )
 
 
-func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, error) {
+func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url := scan(r, client, pluginDir)
+    vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
 
     // Report
     reportContent := report.ReadFileToString("report-template.md", pluginDir)
@@ -20,12 +20,12 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
         "request": rawReq,
     })
     
-    return	"Low", url, summary, vulnFound, nil
+    return	"Low", url, summary, vulnFound, rawResp, nil
 }
 
 
 // Running all Fuzzers
-func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
+func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string, string) {
     
     // Get domain of target
     hostParts := strings.Split(r.Host, ":")
@@ -49,16 +49,16 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
     }
 
     // Running All Fuzzers (Except fuzzHeaders)
-    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string){
+    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string){
         fuzzers.FuzzQuery,
         fuzzers.FuzzFormData,
     }
 
     for _, fuzzer := range fuzzers {
-        if vulnFound, rawReq, url, _, _ := fuzzer(r, client, payloads, matcher); vulnFound {
-            return vulnFound, rawReq, url
+        if vulnFound, rawReq, url, _, _, rawResp := fuzzer(r, client, payloads, matcher); vulnFound {
+            return vulnFound, rawReq, url, rawResp
         }
     }
 
-    return false, "", ""
+    return false, "", "", ""
 }
