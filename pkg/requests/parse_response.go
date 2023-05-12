@@ -5,6 +5,7 @@ import (
 	"io"
 	"fmt"
 	"compress/gzip"
+	"compress/flate"
 	"net/http"
 
 	"github.com/cfsdes/nucke/internal/initializers"
@@ -43,6 +44,8 @@ func getBody(resp *http.Response) string {
 			fmt.Println("Response parser gzip error: ", err)
 		}
 		defer bodyReader.Close()
+	case "deflate":
+		bodyReader = flate.NewReader(resp.Body)
 	default:
 		bodyReader = resp.Body
 	}
