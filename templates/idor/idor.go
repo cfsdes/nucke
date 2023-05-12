@@ -46,11 +46,11 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
                     value := strings.TrimSpace(strings.Join(parts[1:], "="))
     
                     if key == "{{.idor_cookie}}" {
-                        r.Header.Add("Cookie", value)
+                        r.Header.Set("Cookie", value)
                     }
 
                     if key == "{{.idor_authorization}}" {
-                        r.Header.Add("Authorization", value)
+                        r.Header.Set("Authorization", value)
                     }
                 }
             }
@@ -60,7 +60,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         _, resBody, _, _ = requests.BasicRequest(r, client)
         anotherLength := len(resBody)
 
-        if ((originalLength == anotherLength) && (originalLength > 200)){
+        if ((originalLength == anotherLength) && (originalLength >= 200)){
             rawReq := requests.RequestToRaw(r)
             url := requests.ExtractRawURL(rawReq)
 
