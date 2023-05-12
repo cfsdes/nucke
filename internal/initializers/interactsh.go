@@ -15,27 +15,42 @@ import (
 
 var interactOutput string = "/tmp/nucke-interact"
 var interactSession string = "/tmp/nucke-interact-session"
-var interactURL string
+var cmd *exec.Cmd
 
 func StartInteractsh() string {
     // Removing old session files
-    deleteFileIfExists(interactOutput)
     deleteFileIfExists(interactSession)
 
 	// Initial Message
     Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
 	fmt.Printf("[%s] Starting interactsh...\n", Cyan("INF"))
 
-	// Start interactsh client and save session file
-    cmd := exec.Command("interactsh-client", "-sf", interactSession)
+    // Start interact first time
+    startInteractSession()
+
+    // restart interact in background every 1 hour
+    go restartInteract()
+
+    return InteractURL
+
+}
+
+// Start Interactsh
+func startInteractSession() {
+
+    // Start interactsh client and save session file
+    cmd = exec.Command("interactsh-client", "-sf", interactSession)
+
+    // Create output file
+    deleteFileIfExists(interactOutput)
     file, err := os.Create(interactOutput)
     if err != nil {
-		fmt.Println("Error creating interact file:", err)
-		os.Exit(1)
-	}
-	defer file.Close()
+        fmt.Println("Error creating interact file:", err)
+        os.Exit(1)
+    }
+    defer file.Close()
     cmd.Stdout = file
-	cmd.Stderr = file
+    cmd.Stderr = file
 
     err = cmd.Start()
     if err != nil {
@@ -43,10 +58,10 @@ func StartInteractsh() string {
         os.Exit(1)
     }
 
-	// Wait for 5 seconds before interrupt the interactsh process
+    // Wait for 5 seconds
     time.Sleep(5 * time.Second)
 
-	// Read the interactsh initial output
+    // Read the interactsh initial output
     file, err = os.Open(interactOutput)
     if err != nil {
         fmt.Println("Error opening file:", err)
@@ -54,15 +69,15 @@ func StartInteractsh() string {
     }
     defer file.Close()
 
-	// Parse the initial output to grep the OOB URL
+    // Parse the initial output to grep the OOB URL
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
         line := scanner.Text()
         re := regexp.MustCompile(`[a-zA-Z0-9]+\.oast\.[a-zA-Z0-9]+`)
         match := re.FindString(line)
         if match != "" {
-            interactURL = match
-			return interactURL
+            InteractURL = match
+            break
         }
     }
 
@@ -70,16 +85,40 @@ func StartInteractsh() string {
         fmt.Println("Error reading file:", err)
         os.Exit(1)
     }
+}
 
-	return ""
+// restart interactsh process every 1 hour
+func restartInteract() {
+    for {
+        time.Sleep(1 * time.Hour)
+
+        // Send SIGINT signal to interrupt interactsh process
+        err := cmd.Process.Signal(os.Interrupt)
+        if err != nil {
+            fmt.Println("Error sending SIGINT signal to interactsh process:", err)
+            continue
+        }
+
+        // espera 5 segundos para o processo interactsh terminar
+        time.Sleep(5 * time.Second)
+
+        // kill interactsh process
+        err = cmd.Process.Kill()
+        if err != nil {
+            fmt.Println("Error killing interactsh process:", err)
+        }
+
+        // Restart interactsh
+        startInteractSession()
+    }
 }
 
 // Replace {{.oob}} with interactSH URL
 func ReplaceOob(payload string) string {
     if strings.Contains(payload, "{{.oob}}") {
-        // Replace "{{.oob}}" with random ID + interactURL
+        // Replace "{{.oob}}" with random ID + InteractURL
         id := fmt.Sprintf("%08d", rand.Intn(100000000))
-        payload = strings.ReplaceAll(payload, "{{.oob}}", id+"."+interactURL)
+        payload = strings.ReplaceAll(payload, "{{.oob}}", id+"."+InteractURL)
     }
 
 	return payload

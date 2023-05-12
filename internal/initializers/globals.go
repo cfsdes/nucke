@@ -44,7 +44,7 @@ func init() {
 		PluginPaths = plugins.BuildPlugins(FilePaths, UpdatePlugins)
 
 		// Start interact.sh
-		InteractURL = StartInteractsh()
+		StartInteractsh()
 	}
 
 	if Output != "" {
