@@ -27,7 +27,7 @@ func Run(r *http.Request, client *http.Client, pluginDir string) (string, string
 // Running all Fuzzers
 func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string, string) {
 
-    // Scan query fixing content length >= & ,=
+    // Scan query fixing content length >= & <=
     vulnFound, rawReq, url := queryFixingContentLengthBased(r, client, pluginDir)
     if vulnFound {
         return vulnFound, rawReq, url
