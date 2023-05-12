@@ -52,11 +52,7 @@ func arbitraryOriginCheck(r *http.Request, client *http.Client) (bool, string, s
     corsURL := fmt.Sprint("https://", domain, ".example.com")
 
     // Add CORS headers
-    if r.Header.Get("Origin") != "" {
-        r.Header.Set("Origin", corsURL)
-    } else {
-        r.Header.Add("Origin", corsURL)
-    }
+    r.Header.Set("Origin", corsURL)
 
     // Send Request
     _, _, statusCode, headers := requests.BasicRequest(r, client)

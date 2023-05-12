@@ -29,7 +29,7 @@ func CloneReq(req *http.Request) *http.Request {
     // Copy the headers from the original request to the new one
     for key, values := range req.Header {
         for _, value := range values {
-            newReq.Header.Add(key, value)
+            newReq.Header.Set(key, value)
         }
     }
 

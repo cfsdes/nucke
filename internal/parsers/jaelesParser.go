@@ -25,9 +25,9 @@ func SendToJaeles(base64str string, jaelesApi string) error {
     }
 
     // Add headers
-    req.Header.Add("User-Agent", "Jaeles Scanner")
-    req.Header.Add("Content-Type", "application/json")
-    req.Header.Add("Content-Length", string(len(reqBytes)))
+    req.Header.Set("User-Agent", "Jaeles Scanner")
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Content-Length", string(len(reqBytes)))
     req.Close = true
 
     // Send request
