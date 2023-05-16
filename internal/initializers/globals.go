@@ -31,14 +31,14 @@ var CustomParams []string 	// Custom parameters to be used during scan
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Scope, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose, Stats, Headers, CustomParams = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose, Stats, Headers, CustomParams = ParseFlags()
 
 	// Initial banner
 	Banner()
 
 	if Config != "" {
 		// Parse Config.yaml
-		FilePaths = plugins.ParseConfig(Config)
+		FilePaths, Scope = plugins.ParseConfig(Config)
 
 		// Build plugins
 		PluginPaths = plugins.BuildPlugins(FilePaths, UpdatePlugins)

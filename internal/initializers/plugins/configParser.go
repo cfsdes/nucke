@@ -22,10 +22,11 @@ type Plugin struct {
 }
 
 type Config struct {
+	Scope string `yaml:"scope"`
 	Plugins []Plugin `yaml:"plugins"`
 }
 
-func ParseConfig(configFile string) (filePaths []string){
+func ParseConfig(configFile string) (filePaths []string, scope string){
 	// Initial message
 	Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
 	fmt.Printf("[%s] Loading plugins...\n", Cyan("INF"))
@@ -42,6 +43,9 @@ func ParseConfig(configFile string) (filePaths []string){
 	if err != nil {
 		log.Fatalf("Error parsing YAML file: %v", err)
 	}
+
+	// Get Scope from Config.yaml
+	scope = config.Scope
 
 	// Iterate over plugins and get the file path
 	for _, plugin := range config.Plugins {
