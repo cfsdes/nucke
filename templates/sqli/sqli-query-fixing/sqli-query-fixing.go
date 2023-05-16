@@ -12,15 +12,22 @@ import (
 
 func Run(r *http.Request, client *http.Client, pluginDir string) (string, string, string, bool, string, error) {
     // Scan
-    vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
-
-    // Report
-    reportContent := report.ReadFileToString("report-template.md", pluginDir)
-    summary := report.ParseTemplate(reportContent, map[string]interface{}{
-        "request": rawReq,
-    })
+    vulnFound, _, _, _ := scan(r, client, pluginDir)
     
-    return	"High", url, summary, vulnFound, rawResp, nil
+    // Run twice to avoid false positives
+    if vulnFound {
+        vulnFound, rawReq, url, rawResp := scan(r, client, pluginDir)
+        
+        // Report
+        reportContent := report.ReadFileToString("report-template.md", pluginDir)
+        summary := report.ParseTemplate(reportContent, map[string]interface{}{
+            "request": rawReq,
+        })
+        
+        return	"High", url, summary, vulnFound, rawResp, nil
+    }
+
+    return "", "", "", false, "", nil
 }
 
 
