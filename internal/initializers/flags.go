@@ -57,7 +57,7 @@ func PrintFlagsByTopic() {
     topics := map[string][]string{
         "Proxy": []string{"port", "headers"},
         "Jaeles": []string{"jc", "jc-api"},
-        "Scan": []string{"config", "proxy", "threads", "out", "p"},
+        "Scan": []string{"config", "proxy", "threads", "scope", "out", "p"},
         "Misc": []string{"update-plugins", "export-ca", "debug", "v", "stats"},
     }
 
