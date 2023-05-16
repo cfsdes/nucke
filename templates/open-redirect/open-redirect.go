@@ -37,8 +37,8 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
     payloads := []string{
         domain+".example.com",
         "https://"+domain+".example.com",
-        "@"+domain+"example.com",
-        "//"+domain+"example.com",
+        "@"+domain+".example.com",
+        "//"+domain+".example.com",
     }
     
     // Creating payload and matcher

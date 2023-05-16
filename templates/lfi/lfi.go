@@ -3,7 +3,6 @@ package main
 import (
     "net/http"
     "github.com/cfsdes/nucke/pkg/report"
-    //"github.com/cfsdes/nucke/pkg/plugins/utils"
     "github.com/cfsdes/nucke/pkg/plugins/fuzzers"
     "github.com/cfsdes/nucke/pkg/plugins/detections"
 )

