@@ -7,7 +7,7 @@ import (
     "path/filepath"
 )
 
-func BuildPlugins(filePaths []string, updatePlugins bool) ([]string) {
+func BuildPlugins(filePaths []string) ([]string) {
 
     // Array onde ficarão os caminhos para os arquivos .so
     var pluginsPath []string
@@ -19,14 +19,12 @@ func BuildPlugins(filePaths []string, updatePlugins bool) ([]string) {
 
         // Compilando os plugins no diretório de cada um
         soFile := filepath.Join(compileDir, "."+filepath.Base(dir[:len(dir)-3])+".so")
-        if _, err := os.Stat(soFile); os.IsNotExist(err) || updatePlugins {
-            cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", soFile, dir)
-            cmd.Stdout = os.Stdout
-            cmd.Stderr = os.Stderr
-            err := cmd.Run()
-            if err != nil {
-                panic(fmt.Sprintf("Error compiling plugin %s: %v\n", dir, err))
-            }
+        cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", soFile, dir)
+        cmd.Stdout = os.Stdout
+        cmd.Stderr = os.Stderr
+        err := cmd.Run()
+        if err != nil {
+            panic(fmt.Sprintf("Error compiling plugin %s: %v\n", dir, err))
         }
 
         pluginsPath = append(pluginsPath, soFile)

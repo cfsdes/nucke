@@ -19,7 +19,6 @@ var Output string			// Output directory for plugins
 var FilePaths []string		// File paths with plugins in golang format
 var PluginPaths []string	// Plugins paths with plugins in .so format
 var InteractURL string		// Interact URL for OOB scan
-var UpdatePlugins bool		// Force the update of all plugins
 var ExportCA bool			// Export PEM certificate
 var Debug bool 				// Debug Error messages
 var Verbose bool			// Verbose Output
@@ -31,7 +30,7 @@ var CustomParams []string 	// Custom parameters to be used during scan
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Proxy, Config, Output, UpdatePlugins, ExportCA, Debug, Verbose, Stats, Headers, CustomParams = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Proxy, Config, Output, ExportCA, Debug, Verbose, Stats, Headers, CustomParams = ParseFlags()
 
 	// Initial banner
 	Banner()
@@ -41,7 +40,7 @@ func init() {
 		FilePaths, Scope = plugins.ParseConfig(Config)
 
 		// Build plugins
-		PluginPaths = plugins.BuildPlugins(FilePaths, UpdatePlugins)
+		PluginPaths = plugins.BuildPlugins(FilePaths)
 
 		// Start interact.sh
 		StartInteractsh()

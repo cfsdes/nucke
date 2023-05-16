@@ -19,7 +19,7 @@ func (h *headersFlag) Set(value string) error {
 	return nil
 }
 
-func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string, config string, output string, updatePlugins bool, exportCA bool, debug bool, verbose bool, stats bool, headers headersFlag, parameters headersFlag) {
+func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string, config string, output string, exportCA bool, debug bool, verbose bool, stats bool, headers headersFlag, parameters headersFlag) {
 	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8888)")
     flag.IntVar(&threads, "threads", 8, "threads to use during plugin scan (default: 8)")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
@@ -27,7 +27,6 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string
     flag.StringVar(&proxy, "proxy", "", "http proxy to use during scans")
     flag.StringVar(&config, "config", "", "yaml config file with plugins to scan")
     flag.StringVar(&output, "out", "", "output directory to save scan results")
-    flag.BoolVar(&updatePlugins, "update-plugins", false, "Force the build of all plugins")
     flag.BoolVar(&exportCA, "export-ca", false, "Export proxy PEM certificate")
     flag.BoolVar(&debug, "debug", false, "Return debug error messages")
     flag.BoolVar(&verbose, "v", false, "Verbose requests made")
@@ -57,7 +56,7 @@ func PrintFlagsByTopic() {
         "Proxy": []string{"port", "headers"},
         "Jaeles": []string{"jc", "jc-api"},
         "Scan": []string{"config", "proxy", "threads", "out", "p"},
-        "Misc": []string{"update-plugins", "export-ca", "debug", "v", "stats"},
+        "Misc": []string{"export-ca", "debug", "v", "stats"},
     }
 
     // Imprime as flags por tópico
