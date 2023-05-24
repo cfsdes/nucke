@@ -31,10 +31,10 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
 
     // Call All Fuzzers (Except fuzzHeaders)
     payloads := []string{
-        "a'elvtnx\"", 
-        "elvtnx\\\"", 
-        "elvtnx<a>askm", 
-        "aaa'\"><h1>elvtnx</h1>aaa",
+        "{{.original}}a'elvtnx\"", 
+        "{{.original}}elvtnx\\\"", 
+        "{{.original}}elvtnx<a>askm", 
+        "{{.original}}aaa'\"><h1>elvtnx</h1>aaa",
     }
     
     matcher := detections.Matcher{
@@ -46,17 +46,10 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         },
     }
 
-    fuzzers := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string){
-        fuzzers.FuzzJSON,
-        fuzzers.FuzzQuery,
-        fuzzers.FuzzFormData,
-        fuzzers.FuzzXML,
-    }
-
-    for _, fuzzer := range fuzzers {
-        if vulnFound, rawReq, url, _, _, rawResp := fuzzer(r, client, payloads, matcher); vulnFound {
-            return vulnFound, rawReq, url, rawResp
-        }
+    // Testing Referer header
+    headers := []string{"Referer"}
+    if match, rawReq, url, _, _, rawResp := fuzzers.FuzzHeaders(r, client, payloads, headers, matcher); match {
+        return match, rawReq, url, rawResp
     }
 
     return false, "", "", ""
