@@ -17,7 +17,7 @@ var interactOutput string = "/tmp/nucke-interact"
 var interactSession string = "/tmp/nucke-interact-session"
 var cmd *exec.Cmd
 
-func StartInteractsh() string {
+func StartInteractsh() {
     // Removing old session files
     deleteFileIfExists(interactSession)
 
@@ -30,9 +30,6 @@ func StartInteractsh() string {
 
     // restart interact in background every 1 hour
     go restartInteract()
-
-    return InteractURL
-
 }
 
 // Start Interactsh
@@ -62,28 +59,38 @@ func startInteractSession() {
     time.Sleep(5 * time.Second)
 
     // Read the interactsh initial output
-    file, err = os.Open(interactOutput)
-    if err != nil {
-        fmt.Println("Error opening file:", err)
-        os.Exit(1)
-    }
-    defer file.Close()
-
-    // Parse the initial output to grep the OOB URL
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        line := scanner.Text()
-        re := regexp.MustCompile(`[a-zA-Z0-9]+\.oast\.[a-zA-Z0-9]+`)
-        match := re.FindString(line)
-        if match != "" {
-            InteractURL = match
-            break
+    for {
+        file, err = os.Open(interactOutput)
+        if err != nil {
+            fmt.Println("Error opening file:", err)
+            os.Exit(1)
         }
-    }
+        defer file.Close()
+    
+        // Parse the initial output to grep the OOB URL
+        scanner := bufio.NewScanner(file)
+        for scanner.Scan() {
+            line := scanner.Text()
+            re := regexp.MustCompile(`[a-zA-Z0-9]+\.oast\.[a-zA-Z0-9]+`)
+            match := re.FindString(line)
+            if match != "" {
+                InteractURL = match
+                return // Exit the loop if match is found
+            }
+        }
 
-    if err := scanner.Err(); err != nil {
-        fmt.Println("Error reading file:", err)
-        os.Exit(1)
+        if err := scanner.Err(); err != nil {
+            fmt.Println("Error reading file:", err)
+            os.Exit(1)
+        }
+
+        if Debug {
+            Red := color.New(color.FgRed, color.Bold).SprintFunc()
+            fmt.Printf("[%s] Error getting interactsh URL, trying again...\n", Red("ERR"))
+        }
+
+        // Wait for 5 seconds before retrying
+        time.Sleep(5 * time.Second)
     }
 }
 
