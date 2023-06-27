@@ -33,6 +33,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
         "./../../../../../../../../../../etc/passwd\x00",
         ".%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2Fetc%2Fpasswd",
         "./.\x00./.\x00./.\x00./.\x00./.\x00./.\x00./.\x00./.\x00./.\x00./.\x00./etc/passwd",
+        "....//....//....//....//....//....//....//....//....//etc/passwd",
     }
 
     matcher := detections.Matcher{
