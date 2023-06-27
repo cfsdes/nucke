@@ -96,7 +96,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
         os.Exit(1)
     }
 
-    // Get Response Staus Code
+    // Get Response Status Code
     resStatusCode := requests.StatusCodeFromRaw(rawResp)
 
 	// Parse output if vulnerability is found
