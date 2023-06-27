@@ -80,7 +80,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
         
         // If verbose
         if initializers.Verbose {
-            fmt.Printf("[Sent] %s %s\n", req.Method, req.URL.String())
+            fmt.Printf("[Scanning] %s %s\n", req.Method, req.URL.String())
         }
 
         // If jaeles scan is enabled
