@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
     "os/exec"
+	"os/user"
     "path/filepath"
     "strings"
 
@@ -14,6 +15,9 @@ import (
 
 // Compila cada plugin contido no filePaths
 func BuildPlugins(filePaths []string) ([]string) {
+
+	Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
+	fmt.Printf("[%s] Building plugins...\n", Cyan("INF"))
 
     // Array onde ficarão os caminhos para os arquivos .so
     var pluginsPath []string
@@ -62,7 +66,6 @@ func CheckLoadedPlugins(filePaths []string, plugins []string) {
 		}
 	}
 
-	
 
 	if len(missingItems) != 0 {
 		Red := color.New(color.FgRed, color.Bold).SprintFunc()
@@ -84,4 +87,50 @@ func extractFileNames(dirs []string) []string {
 	}
 
 	return fileNames
+}
+
+// List all plugins in the filePath (dir)
+func ListPlugins(dir string){
+	expandedDir, err := expandUser(dir)
+	if err != nil && globals.Debug {
+		fmt.Println("List plugins error:", err)
+		return
+	}
+
+	Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
+	fmt.Printf("[%s] Plugins available on %s:\n\n", Cyan("INF"), expandedDir)
+	err = filepath.Walk(expandedDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil && globals.Debug {
+			fmt.Println("List plugins error:", err)
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".go" {
+			fileName := filepath.Base(info.Name())
+			fileName = fileName[:len(fileName)-len(filepath.Ext(fileName))]
+			fmt.Println(fileName)
+		}
+
+		return nil
+	})
+	fmt.Println("\n")
+
+	if err != nil && globals.Debug {
+		fmt.Println("List plugins error:", err)
+	}
+
+	os.Exit(0)
+}
+
+func expandUser(path string) (string, error) {
+	if len(path) < 2 || path[:2] != "~/" {
+		return path, nil
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(usr.HomeDir, path[2:]), nil
 }

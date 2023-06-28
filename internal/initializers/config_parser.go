@@ -12,6 +12,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 	"github.com/fatih/color"
+	"github.com/cfsdes/nucke/internal/globals"
 )
 
 type Plugin struct {
@@ -28,8 +29,10 @@ type Config struct {
 
 func ParseConfig(configFile string) (filePaths []string, scope string){
 	// Initial message
-	Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-	fmt.Printf("[%s] Loading plugins...\n", Cyan("INF"))
+	if globals.Debug {
+		Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+		fmt.Printf("[%s] Parsing config file...\n", Blue("DEBUG"))
+	}
 
 	// Read config file
 	yamlFile, err := ioutil.ReadFile(configFile)
@@ -84,6 +87,9 @@ func ParseConfig(configFile string) (filePaths []string, scope string){
 			}
 		}
 
+		if globals.ListPlugins {
+			ListPlugins(plugin.Path)
+		}
 		CheckLoadedPlugins(filePaths, plugin.Ids)
 	}
 
