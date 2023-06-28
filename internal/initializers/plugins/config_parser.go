@@ -50,7 +50,7 @@ func ParseConfig(configFile string) (filePaths []string, scope string){
 	// Iterate over plugins and get the file path
 	for _, plugin := range config.Plugins {
 		if strings.HasPrefix(plugin.Path, "github.com/") {
-			downloadRepository(&plugin)
+			plugin = downloadRepository(plugin)
 		}
 		
 		for _, id := range plugin.Ids {
@@ -83,6 +83,8 @@ func ParseConfig(configFile string) (filePaths []string, scope string){
 				continue
 			}
 		}
+
+		CheckLoadedPlugins(filePaths, plugin.Ids)
 	}
 
 	return
@@ -131,7 +133,7 @@ func listFiles(dirPath string, ext string) []string {
 
 
 // Auxiliar function (download GitHub repository and update plugin path)
-func downloadRepository(plugin *Plugin) {
+func downloadRepository(plugin Plugin) (Plugin) {
 	// Create ~/.nucke/repositories directory if it doesn't exist
 	repoDir := filepath.Join(os.Getenv("HOME"), ".nucke", "repositories")
 	err := os.MkdirAll(repoDir, 0755)
@@ -163,6 +165,8 @@ func downloadRepository(plugin *Plugin) {
 
 	// Update plugin.Path to the local directory
 	plugin.Path = filepath.Join(repoDir, strings.Join(strings.Split(plugin.Path, "/")[2:], "/"))
+
+	return plugin
 }
 
 

@@ -85,8 +85,8 @@ func startInteractSession() {
         }
 
         if Debug {
-            Red := color.New(color.FgRed, color.Bold).SprintFunc()
-            fmt.Printf("[%s] Error getting interactsh URL, trying again...\n", Red("ERR"))
+            Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+            fmt.Printf("[%s] Error getting interactsh URL, trying again...\n", Blue("DEBUG"))
         }
 
         // Wait for 5 seconds before retrying

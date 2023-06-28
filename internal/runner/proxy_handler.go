@@ -34,13 +34,11 @@ func StartProxy() {
     // Cria um proxy com a função de roteamento personalizada
     proxy := goproxy.NewProxyHttpServer()
 
-    // Se debug não estiver habilitado, desabilitar logs da biblioteca goproxy
-    if !initializers.Debug {
-        logger := log.New(ioutil.Discard, "", 0)
-        proxy.Logger = logger
-    }
+    // Desabilitar logs da biblioteca goproxy
+    logger := log.New(ioutil.Discard, "", 0)
+    proxy.Logger = logger
+    proxy.Verbose = false
     
-    //proxy.Verbose = true
     proxy.OnRequest().DoFunc(requestHandler)
     proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 
@@ -79,8 +77,9 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
     if (initializers.Scope != "" && regexp.MustCompile(initializers.Scope).MatchString(req.URL.String()) || initializers.Scope == "") {
         
         // If verbose
-        if initializers.Verbose {
-            fmt.Printf("[Scanning] %s %s\n", req.Method, req.URL.String())
+        if initializers.Debug {
+            Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+            fmt.Printf("[%s] Scanning: %s %s\n", Blue("DEBUG"), req.Method, req.URL.String())
         }
 
         // If jaeles scan is enabled
