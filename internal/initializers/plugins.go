@@ -27,6 +27,9 @@ func BuildPlugins(filePaths []string) ([]string) {
         // Pegando diretório do plugin.go
         compileDir := filepath.Dir(dir)
 
+		// Alterando para o diretório mainDir
+		os.Chdir(compileDir)
+
         // Compilando os plugins no diretório de cada um
         soFile := filepath.Join(compileDir, "."+filepath.Base(dir[:len(dir)-3])+".so")
         cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", soFile, dir)

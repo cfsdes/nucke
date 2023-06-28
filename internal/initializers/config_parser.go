@@ -27,7 +27,9 @@ type Config struct {
 	Plugins []Plugin `yaml:"plugins"`
 }
 
-func ParseConfig(configFile string) (filePaths []string, scope string){
+var filePaths []string
+
+func ParseConfig(configFile string) (scope string){
 	// Initial message
 	if globals.Debug {
 		Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
@@ -52,9 +54,9 @@ func ParseConfig(configFile string) (filePaths []string, scope string){
 
 	// Iterate over plugins and get the file path
 	for _, plugin := range config.Plugins {
-		if strings.HasPrefix(plugin.Path, "github.com/") {
-			plugin = downloadRepository(plugin)
-		}
+
+		// Atualizando o path para o diretorio correto
+		plugin = formatPluginPath(plugin)
 		
 		for _, id := range plugin.Ids {
 			if id == "*" {
@@ -87,10 +89,16 @@ func ParseConfig(configFile string) (filePaths []string, scope string){
 			}
 		}
 
+		// List Plugins
 		if globals.ListPlugins {
 			ListPlugins(plugin.Path)
 		}
+
+		// Check Plugins
 		CheckLoadedPlugins(filePaths, plugin.Ids)
+
+		// Build Plugins
+		BuildPlugins(filePaths)
 	}
 
 	return
@@ -108,13 +116,6 @@ func contains(slice []string, value string) bool {
 
 // Auxiliar function (list files in the directory)
 func listFiles(dirPath string, ext string) []string {
-	if strings.HasPrefix(dirPath, "~/") {
-		usr, err := user.Current()
-		if err != nil {
-			log.Fatalf("Error getting current user: %v", err)
-		}
-		dirPath = filepath.Join(usr.HomeDir, dirPath[2:])
-	}
 
 	var result []string
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
@@ -176,3 +177,30 @@ func downloadRepository(plugin Plugin) (Plugin) {
 }
 
 
+func formatPluginPath(plugin Plugin) (Plugin) {
+
+	// Atualizando o path para o diretorio correto
+	if strings.HasPrefix(plugin.Path, "github.com/") {
+		return downloadRepository(plugin)
+	}
+
+	// Ajustar ~ para HOME
+	if strings.HasPrefix(plugin.Path, "~/") {
+		usr, err := user.Current()
+		if err != nil {
+			log.Fatalf("Error getting current user: %v", err)
+		}
+		plugin.Path = filepath.Join(usr.HomeDir, plugin.Path[2:])
+	}
+
+	// Obter o caminho absoluto completo
+	if !filepath.IsAbs(plugin.Path) {
+		absDir, err := filepath.Abs(plugin.Path)
+		if err != nil && globals.Debug {
+			fmt.Printf("Error getting absolute plugin path: %v\n", err)
+		}
+		plugin.Path = absDir
+	}
+
+	return plugin
+}

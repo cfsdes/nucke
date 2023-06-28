@@ -9,7 +9,6 @@ var Scope string			// Regex to set the scope to be scanned
 var Proxy string			// Proxy to use during scan
 var PluginsConfig string	// Config.yaml file for plugins
 var Output string			// Output directory for plugins
-var FilePaths []string		// File paths with plugins in golang format
 var PluginPaths []string	// Plugins paths with plugins in .so format
 var InteractURL string		// Interact URL for OOB scan
 var ExportCA bool			// Export PEM certificate
