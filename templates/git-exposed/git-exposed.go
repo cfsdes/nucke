@@ -37,6 +37,7 @@ func scan(r *http.Request, client *http.Client, pluginDir string) (bool, string,
             Operator: "==",
             Code: 200,
         },
+        Operator: "AND",
     }
 
     if vulnFound, rawReq, url, _, _, rawResp := fuzzers.FuzzPath(r, client, payloads, matcher, "*"); vulnFound {
