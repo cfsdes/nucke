@@ -14,7 +14,7 @@ import (
 	"github.com/cfsdes/nucke/internal/parsers"
 )
 
-func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
+func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, location string) (bool, string, string, string, string, string) {
 	req := requests.CloneReq(r)
 
 	// Extract segments from URL path
@@ -37,8 +37,22 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 		}
 	}
 
-	// For each segment of the path, send a new request with the payload
-	for i, segment := range segments {
+	// Determine the location to inject payloads
+	injectIndexes := []int{}
+	if location == "*" {
+		injectIndexes = make([]int, len(segments))
+		for i := range injectIndexes {
+			injectIndexes[i] = i
+		}
+	} else if location == "last" {
+		lastIndex := len(segments) - 1
+		injectIndexes = []int{lastIndex}
+	}
+
+	// For each segment of the path, inject payloads according to the location
+	for _, index := range injectIndexes {
+		segment := segments[index]
+
 		// Create a new payload with the original segment replaced
 		for _, payload := range payloads {
 			// Replace "{{.original}}" with the current segment in the payload
@@ -50,7 +64,7 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 			// Create a new path with the payload segment
 			newSegments := make([]string, len(segments))
 			copy(newSegments, segments)
-			newSegments[i] = payload
+			newSegments[index] = payload
 
 			// Join the modified segments to form the new path
 			newPath := strings.Join(newSegments, "/")
@@ -83,12 +97,12 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 			oobID := initializers.ExtractOobID(payload)
 
 			// Check if match vulnerability
-			go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", i), resultChan)
+			go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", index), resultChan)
 		}
 	}
 
 	// Wait for any goroutine to send a result to the channel
-	for i := 0; i < len(segments)*len(payloads); i++ {
+	for i := 0; i < len(injectIndexes)*len(payloads); i++ {
 		res := <-resultChan
 		if res.Found {
 			return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
