@@ -17,7 +17,7 @@ import (
 func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
 	req := requests.CloneReq(r)
 
-	// Extract parameters from URL
+	// Extract segments from URL path
 	segments := strings.Split(req.URL.Path, "/")
 
 	// Result channel
@@ -37,14 +37,17 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 		}
 	}
 
-	// For each segment of the path, send a new request with the segment replaced by a payload
-	for i, _ := range segments {
-		// Create a new path with the segment replaced by a payload
+	// For each segment of the path, send a new request with the payload
+	for i, segment := range segments {
+		// Create a new payload with the original segment replaced
 		for _, payload := range payloads {
+			// Replace "{{.original}}" with the current segment in the payload
+			payload = strings.Replace(payload, "{{.original}}", segment, -1)
 
 			// Update payloads {{.params}}
 			payload = parsers.ParsePayload(payload)
 
+			// Create a new path with the payload segment
 			newSegments := make([]string, len(segments))
 			copy(newSegments, segments)
 			newSegments[i] = payload
