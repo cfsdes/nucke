@@ -1,2 +1,0 @@
-(?m)^(L|l)ocation: ((http|https)://)?example.com
-(?m)^(?:Location\s*?:\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\-_\.@]*)example\.com.*$
