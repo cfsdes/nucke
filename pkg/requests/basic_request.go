@@ -5,7 +5,7 @@ import (
     "time"
     "fmt"
 
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
 )
 
 /**
@@ -23,7 +23,7 @@ func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[s
     start := time.Now()
     resp, err := client.Do(req)
     if err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("Basic Request Error:",err)
         }
         return 0, "", 0, nil, ""

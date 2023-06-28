@@ -8,7 +8,7 @@ import (
     "bufio"
     "strconv"
 
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
 )
 
 func RequestToRaw(r *http.Request) string {
@@ -95,16 +95,16 @@ func StatusCodeFromRaw(raw string) (int) {
 
     // Check if the first line contains a valid status line
     if len(lines) < 1 {
-        if initializers.Debug {
-            fmt.Printf("Invalid Raw Response: empty string")
+        if globals.Debug {
+            fmt.Printf("Invalid Raw Response: empty string\n")
         }
         return 0
     }
 
     parts := strings.SplitN(lines[0], " ", 3)
     if len(parts) != 3 {
-        if initializers.Debug {
-            fmt.Printf("Invalid Raw Response: invalid status line: %s", lines[0])
+        if globals.Debug {
+            fmt.Printf("Invalid Raw Response: invalid status line: %s\n", lines[0])
         }
         return 0
     }
@@ -112,8 +112,8 @@ func StatusCodeFromRaw(raw string) (int) {
     // Parse the status code and return it
     statusCode, err := strconv.Atoi(parts[1])
     if err != nil {
-        if initializers.Debug {
-            fmt.Printf("Invalid Raw Response: invalid status code: %s", parts[1])
+        if globals.Debug {
+            fmt.Printf("Invalid Raw Response: invalid status code: %s\n", parts[1])
         }
         return 0
     }

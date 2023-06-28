@@ -14,19 +14,19 @@ import (
     "sync/atomic"
 
     "github.com/fatih/color"
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
     "github.com/cfsdes/nucke/internal/parsers"
     "github.com/cfsdes/nucke/pkg/requests"
 )
 
 // Create a channel with a buffer of threads
-var ch = make(chan int, initializers.Threads)
+var ch = make(chan int, globals.Threads)
 
 // Start Proxy
 func StartProxy() {
 
     // Export CA certificate
-    if initializers.ExportCA {
+    if globals.ExportCA {
         exportCA()
         return
     }
@@ -44,21 +44,21 @@ func StartProxy() {
 
     // Start messages
     Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-    fmt.Printf("[%s] Listening on port %s...\n", Cyan("INF"), initializers.Port)
+    fmt.Printf("[%s] Listening on port %s...\n", Cyan("INF"), globals.Port)
 
-    if initializers.Jaeles {
-        fmt.Printf("[%s] Interacting with jaeles: %s\n", Cyan("INF"), initializers.JaelesApi)
+    if globals.Jaeles {
+        fmt.Printf("[%s] Interacting with jaeles: %s\n", Cyan("INF"), globals.JaelesApi)
     }
 
     // Start Status Server
-    if initializers.Stats {
+    if globals.Stats {
         InitStatsServer()
     }
 
     fmt.Println()
     
     // Start to listen
-    log.Fatal(http.ListenAndServe(":"+initializers.Port, proxy))
+    log.Fatal(http.ListenAndServe(":"+globals.Port, proxy))
 
 }
 
@@ -74,26 +74,26 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 
 
     // Send request to jaeles API server and filter if scope is specified
-    if (initializers.Scope != "" && regexp.MustCompile(initializers.Scope).MatchString(req.URL.String()) || initializers.Scope == "") {
+    if (globals.Scope != "" && regexp.MustCompile(globals.Scope).MatchString(req.URL.String()) || globals.Scope == "") {
         
         // If verbose
-        if initializers.Debug {
+        if globals.Debug {
             Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
             fmt.Printf("[%s] Scanning: %s %s\n", Blue("DEBUG"), req.Method, req.URL.String())
         }
 
         // If jaeles scan is enabled
-        if initializers.Jaeles {
-            parsers.SendToJaeles(requestBase64, initializers.JaelesApi)
+        if globals.Jaeles {
+            parsers.SendToJaeles(requestBase64, globals.JaelesApi)
         }
 
         // If config with plugins is provided
-        if initializers.PluginsConfig != "" {
+        if globals.PluginsConfig != "" {
             // Clone request before scanning
             reqScan := requests.CloneReq(req)
             
             // Add request to pendingRequests
-            atomic.AddInt64(&initializers.PendingScans, 1)
+            atomic.AddInt64(&globals.PendingScans, 1)
 
             // executa a ScannerHandler dentro de uma goroutine
             go func() {
@@ -103,7 +103,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
                 ScannerHandler(reqScan)
 
                 // Remove request from pendingRequests
-                atomic.AddInt64(&initializers.PendingScans, -1)
+                atomic.AddInt64(&globals.PendingScans, -1)
                 
                 // sinaliza ao canal que a goroutine está livre
                 <-ch

@@ -1,9 +1,4 @@
-package initializers
-
-import (
-	"os"
-	"fmt"
-)
+package globals
 
 // Flags
 var Port string 			// Port that nucke will listen
@@ -29,26 +24,4 @@ var CustomParams []string 	// Custom parameters to be used during scan
 // Initiate global variables
 func init() {
 	Port, Threads, JaelesApi, Jaeles, Proxy, PluginsConfig, Output, ExportCA, Debug, Version, Stats, Headers, CustomParams = ParseFlags()
-
-	// Initial banner
-	Banner()
-
-	if PluginsConfig != "" {
-		// Parse Config.yaml
-		FilePaths, Scope = ParseConfig(PluginsConfig)
-
-		// Build plugins
-		PluginPaths = BuildPlugins(FilePaths)
-
-		// Start interact.sh
-		StartInteractsh()
-	}
-
-	if Output != "" {
-		Output = FormatOutput(Output)
-		err := os.MkdirAll(Output, 0755)
-		if err != nil {
-			fmt.Println("Error creating output path:",err)
-		}
-	}
 }

@@ -9,8 +9,9 @@ import (
     
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
     "github.com/cfsdes/nucke/internal/parsers"
+    "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
@@ -26,7 +27,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
 
     // Get form data parameters from request body
     if err := req.ParseForm(); err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("fuzzFormData:",err)
         }
         return false, "", "", "", "", "" 
@@ -55,7 +56,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             // Create a new request with the updated form data
             newReq, err := http.NewRequest(req.Method, req.URL.String(), reqBody)
             if err != nil {
-                if initializers.Debug {
+                if globals.Debug {
                     fmt.Println("fuzzFormData:",err)
                 }
                 return false, "", "", "", "", ""
@@ -71,7 +72,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             start := time.Now()
             resp, err := client.Do(newReq)
             if err != nil {
-                if initializers.Debug {
+                if globals.Debug {
                     fmt.Println("fuzzFormData:",err)
                 }
                 return false, "", "", "", "", ""
@@ -81,7 +82,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             elapsed := int(time.Since(start).Seconds())
 
             // Extract OOB ID
-            oobID := initializers.ExtractOobID(payload)
+            oobID := utils.ExtractOobID(payload)
 
             // Check if match vulnerability
             go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)

@@ -1,4 +1,4 @@
-package initializers
+package utils
 
 import (
     "bufio"
@@ -11,13 +11,14 @@ import (
     "math/rand"
 
 	"github.com/fatih/color"
+    "github.com/cfsdes/nucke/internal/globals"
 )
 
 var interactOutput string = "/tmp/nucke-interact"
 var interactSession string = "/tmp/nucke-interact-session"
 var cmd *exec.Cmd
 
-func StartInteractsh() {
+func StartInteractsh() string {
     // Removing old session files
     deleteFileIfExists(interactSession)
 
@@ -26,14 +27,16 @@ func StartInteractsh() {
 	fmt.Printf("[%s] Starting interactsh...\n", Cyan("INF"))
 
     // Start interact first time
-    startInteractSession()
+    interactURL := startInteractSession()
 
     // restart interact in background every 1 hour
     go restartInteract()
+
+    return interactURL
 }
 
 // Start Interactsh
-func startInteractSession() {
+func startInteractSession() string {
 
     // Start interactsh client and save session file
     cmd = exec.Command("interactsh-client", "-sf", interactSession)
@@ -74,8 +77,7 @@ func startInteractSession() {
             re := regexp.MustCompile(`[a-zA-Z0-9]+\.oast\.[a-zA-Z0-9]+`)
             match := re.FindString(line)
             if match != "" {
-                InteractURL = match
-                return // Exit the loop if match is found
+                return match// Exit the loop if match is found
             }
         }
 
@@ -84,7 +86,7 @@ func startInteractSession() {
             os.Exit(1)
         }
 
-        if Debug {
+        if globals.Debug {
             Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
             fmt.Printf("[%s] Error getting interactsh URL, trying again...\n", Blue("DEBUG"))
         }
@@ -125,7 +127,7 @@ func ReplaceOob(payload string) string {
     if strings.Contains(payload, "{{.oob}}") {
         // Replace "{{.oob}}" with random ID + InteractURL
         id := fmt.Sprintf("%08d", rand.Intn(100000000))
-        payload = strings.ReplaceAll(payload, "{{.oob}}", id+"."+InteractURL)
+        payload = strings.ReplaceAll(payload, "{{.oob}}", id+"."+globals.InteractURL)
     }
 
 	return payload

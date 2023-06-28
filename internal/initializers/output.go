@@ -13,6 +13,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/cfsdes/nucke/internal/globals"
 )
 
 func VulnerabilityOutput(scanName string, severity string, url string, summary string) {
@@ -37,7 +38,7 @@ func VulnerabilityOutput(scanName string, severity string, url string, summary s
 	}
 
 	// Create output
-	if Output != "" {
+	if globals.Output != "" {
 		outputPath := getOutputPath(url, scanName, summary)
 
 		err := writeStringToFile(summary, outputPath)
@@ -95,7 +96,7 @@ func getOutputPath(urlString string, scanName string, summary string) string {
 	fileName := scanName + "-" + hashString
 
 	// set output path
-	outputPath := filepath.Join(Output, domain, fileName)
+	outputPath := filepath.Join(globals.Output, domain, fileName)
 	return outputPath
 }
 

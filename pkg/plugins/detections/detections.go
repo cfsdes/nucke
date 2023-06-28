@@ -3,8 +3,8 @@ package detections
 import (
 	"net/http"
 
-	"github.com/cfsdes/nucke/internal/initializers"
 	"github.com/cfsdes/nucke/pkg/requests"
+	"github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 
@@ -38,7 +38,7 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 		foundArray = append(foundArray, found)
 	}
 	if m.OOB && oobID != "" {
-		found := initializers.CheckOobInteraction(oobID)
+		found := utils.CheckOobInteraction(oobID)
 		foundArray = append(foundArray, found)
 	}
 

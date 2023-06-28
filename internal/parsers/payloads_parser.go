@@ -4,14 +4,15 @@ import (
 	"strings"
 	"fmt"
 
-	"github.com/cfsdes/nucke/internal/initializers"
+	"github.com/cfsdes/nucke/pkg/plugins/utils"
+	"github.com/cfsdes/nucke/internal/globals"
 )
 
 func ParsePayload(payload string) string {
 
 	// Replace custom parameters
-    if len(initializers.CustomParams) > 0 {
-        for _, param := range initializers.CustomParams {
+    if len(globals.CustomParams) > 0 {
+        for _, param := range globals.CustomParams {
             parts := strings.SplitN(param, "=", -1)
             if len(parts) >= 2 {
                 key := fmt.Sprintf("{{.%s}}", strings.TrimSpace(parts[0]))
@@ -26,7 +27,7 @@ func ParsePayload(payload string) string {
     }
 
 	// Replace {{.oob}} with interactsh url
-	payload = initializers.ReplaceOob(payload)
+	payload = utils.ReplaceOob(payload)
 
 	return payload
 }

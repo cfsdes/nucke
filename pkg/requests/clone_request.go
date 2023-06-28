@@ -8,7 +8,7 @@ import (
     "log"
     "strings"
 
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
 )
 
 /*
@@ -34,8 +34,8 @@ func CloneReq(req *http.Request) *http.Request {
     }
 
     // Add custom headers from --headers parameter
-    if len(initializers.Headers) > 0 {
-        for _, header := range initializers.Headers {
+    if len(globals.Headers) > 0 {
+        for _, header := range globals.Headers {
             parts := strings.SplitN(header, ":", -1)
             if len(parts) >= 2 {
                 key := strings.TrimSpace(parts[0])

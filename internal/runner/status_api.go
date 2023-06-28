@@ -5,14 +5,14 @@ import (
     "net/http"
 	"github.com/fatih/color"
 
-	"github.com/cfsdes/nucke/internal/initializers"
+	"github.com/cfsdes/nucke/internal/globals"
 
 )
 
 
 func InitStatsServer() {
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        count := initializers.PendingScans
+        count := globals.PendingScans
 		if count > 0 {
 			fmt.Fprintf(w, "Pending scans: %d\n", count)
 		} else {

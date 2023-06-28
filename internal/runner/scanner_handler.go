@@ -12,6 +12,7 @@ import (
     "crypto/tls"
 
 	"github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
     "github.com/cfsdes/nucke/pkg/requests"
 )
 
@@ -23,7 +24,7 @@ func ScannerHandler(req *http.Request) {
 	}
 
 	// Run Config Plugins
-	for _, plugin := range initializers.PluginPaths {
+	for _, plugin := range globals.PluginPaths {
 		runPlugin(plugin, req, client)
 	}
 }
@@ -31,9 +32,9 @@ func ScannerHandler(req *http.Request) {
 // Generate HTTP Client with Proxy
 func createHTTPClient() (*http.Client, error) {
     var client *http.Client
-    if initializers.Proxy != "" {
+    if globals.Proxy != "" {
         // Create HTTP client with proxy
-        proxyUrl, err := url.Parse(initializers.Proxy)
+        proxyUrl, err := url.Parse(globals.Proxy)
         if err != nil {
             return nil, fmt.Errorf("failed to parse proxy URL: %s", err)
         }

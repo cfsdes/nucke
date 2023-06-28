@@ -11,8 +11,9 @@ import (
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
     "github.com/cfsdes/nucke/internal/parsers"
+    "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
@@ -31,7 +32,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
         body, err = ioutil.ReadAll(req.Body)
         if err != nil {
             // handle error
-            if initializers.Debug {
+            if globals.Debug {
                 fmt.Println("fuzzQuery:",err)
             }
             return false, "", "", "", "", ""
@@ -73,7 +74,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             resp, err := client.Do(reqCopy)
             if err != nil {
                 // handle error
-                if initializers.Debug {
+                if globals.Debug {
                     fmt.Println("fuzzQuery:",err)
                 }
                 return false, "", "", "", "", ""
@@ -83,7 +84,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             elapsed := int(time.Since(start).Seconds())
 
             // Extract OOB ID
-            oobID := initializers.ExtractOobID(payload)
+            oobID := utils.ExtractOobID(payload)
 
             // Check if match vulnerability
             go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)

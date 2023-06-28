@@ -11,8 +11,9 @@ import (
 
     "github.com/cfsdes/nucke/pkg/plugins/detections"
     "github.com/cfsdes/nucke/pkg/requests"
-    "github.com/cfsdes/nucke/internal/initializers"
+    "github.com/cfsdes/nucke/internal/globals"
     "github.com/cfsdes/nucke/internal/parsers"
+    "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
 
@@ -30,7 +31,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     // Read request body
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
         return false, "", "", "", "", ""
@@ -39,7 +40,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     // Create obj based on json data
     jsonData, err := unmarshalJSON(body)
     if err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
         return false, "", "", "", "", ""
@@ -85,7 +86,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
 
     newBody, err := json.Marshal(newJsonData)
     if err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
     }
@@ -94,7 +95,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
 
     newReq, err := createNewRequest(req, reqBody)
     if err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
     }
@@ -106,7 +107,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     start := time.Now()
     resp, err := client.Do(newReq)
     if err != nil {
-        if initializers.Debug {
+        if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
     }
@@ -115,7 +116,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     elapsed := int(time.Since(start).Seconds())
 
     // Extract OOB ID
-    oobID := initializers.ExtractOobID(payload)
+    oobID := utils.ExtractOobID(payload)
 
     // Check if match vulnerability
     go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)

@@ -8,6 +8,7 @@ import (
     "strings"
 
     "github.com/fatih/color"
+	"github.com/cfsdes/nucke/internal/globals"
 
 )
 
@@ -53,6 +54,9 @@ func CheckLoadedPlugins(filePaths []string, plugins []string) {
 				break
 			}
 		}
+		if plugin == "*" {
+			found = true
+		}
 		if !found {
 			missingItems = append(missingItems, plugin)
 		}
@@ -65,7 +69,7 @@ func CheckLoadedPlugins(filePaths []string, plugins []string) {
 		fmt.Printf("[%s] Error loading plugins: %v\n", Red("ERR"), missingItems)
 	} 
 
-	if Debug {
+	if globals.Debug {
 		Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
 		fmt.Printf("[%s] Plugins loaded: %v\n", Blue("DEBUG"), fileNames)
 	}

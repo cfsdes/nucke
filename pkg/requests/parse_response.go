@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cfsdes/nucke/internal/initializers"
+	"github.com/cfsdes/nucke/internal/globals"
 )
 
 // Parse response
@@ -62,7 +62,7 @@ func getBody(resp *http.Response) string {
 
 	// Read body
 	bodyBytes, err := ioutil.ReadAll(bodyReader)
-	if err != nil && initializers.Debug {
+	if err != nil && globals.Debug {
 		fmt.Println("Response parser error: ", err)
 	}
 
