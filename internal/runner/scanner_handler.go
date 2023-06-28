@@ -11,9 +11,9 @@ import (
     "strings"
     "crypto/tls"
 
-	"github.com/cfsdes/nucke/internal/initializers"
     "github.com/cfsdes/nucke/internal/globals"
     "github.com/cfsdes/nucke/pkg/requests"
+    "github.com/cfsdes/nucke/pkg/report"
 )
 
 func ScannerHandler(req *http.Request) {
@@ -102,6 +102,6 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 
 	// Parse output if vulnerability is found
 	if found && resStatusCode != 429 {
-		initializers.VulnerabilityOutput(scanName, severity, url, summary)
+		report.VulnerabilityOutput(scanName, severity, url, summary)
 	}
 }
