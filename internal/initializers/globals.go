@@ -3,8 +3,6 @@ package initializers
 import (
 	"os"
 	"fmt"
-
-	"github.com/cfsdes/nucke/internal/initializers/plugins"
 )
 
 // Flags
@@ -14,7 +12,7 @@ var JaelesApi string		// Jaeles server API url
 var Jaeles bool				// Jaeles boolean flag
 var Scope string			// Regex to set the scope to be scanned
 var Proxy string			// Proxy to use during scan
-var Config string			// Config.yaml file for plugins
+var PluginsConfig string	// Config.yaml file for plugins
 var Output string			// Output directory for plugins
 var FilePaths []string		// File paths with plugins in golang format
 var PluginPaths []string	// Plugins paths with plugins in .so format
@@ -30,17 +28,17 @@ var CustomParams []string 	// Custom parameters to be used during scan
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Proxy, Config, Output, ExportCA, Debug, Version, Stats, Headers, CustomParams = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Proxy, PluginsConfig, Output, ExportCA, Debug, Version, Stats, Headers, CustomParams = ParseFlags()
 
 	// Initial banner
 	Banner()
 
-	if Config != "" {
+	if PluginsConfig != "" {
 		// Parse Config.yaml
-		FilePaths, Scope = plugins.ParseConfig(Config)
+		FilePaths, Scope = ParseConfig(PluginsConfig)
 
 		// Build plugins
-		PluginPaths = plugins.BuildPlugins(FilePaths)
+		PluginPaths = BuildPlugins(FilePaths)
 
 		// Start interact.sh
 		StartInteractsh()

@@ -88,7 +88,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
         }
 
         // If config with plugins is provided
-        if initializers.Config != "" {
+        if initializers.PluginsConfig != "" {
             // Clone request before scanning
             reqScan := requests.CloneReq(req)
             
