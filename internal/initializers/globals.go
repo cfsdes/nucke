@@ -21,6 +21,7 @@ var PluginPaths []string	// Plugins paths with plugins in .so format
 var InteractURL string		// Interact URL for OOB scan
 var ExportCA bool			// Export PEM certificate
 var Debug bool 				// Debug Error messages
+var Version bool			// Return Nucke Version
 var Verbose bool			// Verbose Output
 var Stats bool				// Start Status server
 var PendingScans int64 		// Number of Pending requests
@@ -30,7 +31,7 @@ var CustomParams []string 	// Custom parameters to be used during scan
 
 // Initiate global variables
 func init() {
-	Port, Threads, JaelesApi, Jaeles, Proxy, Config, Output, ExportCA, Debug, Verbose, Stats, Headers, CustomParams = ParseFlags()
+	Port, Threads, JaelesApi, Jaeles, Proxy, Config, Output, ExportCA, Debug, Verbose, Version, Stats, Headers, CustomParams = ParseFlags()
 
 	// Initial banner
 	Banner()

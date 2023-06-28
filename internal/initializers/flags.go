@@ -19,7 +19,7 @@ func (h *headersFlag) Set(value string) error {
 	return nil
 }
 
-func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string, config string, output string, exportCA bool, debug bool, verbose bool, stats bool, headers headersFlag, parameters headersFlag) {
+func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string, config string, output string, exportCA bool, debug bool, verbose bool, version bool, stats bool, headers headersFlag, parameters headersFlag) {
 	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8888)")
     flag.IntVar(&threads, "threads", 50, "threads to use during plugin scan (default: 50)")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
@@ -30,6 +30,7 @@ func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string
     flag.BoolVar(&exportCA, "export-ca", false, "Export proxy PEM certificate")
     flag.BoolVar(&debug, "debug", false, "Return debug error messages")
     flag.BoolVar(&verbose, "v", false, "Verbose requests made")
+    flag.BoolVar(&version, "version", false, "Return Nucke's version")
     flag.BoolVar(&stats, "stats", false, "Start status server on port 8899")
     flag.Var(&headers, "headers", "Set custom headers. Accept multiple flag usages.") // Accept multiple flag usages
     flag.Var(&parameters, "p", "Custom parameters to be used in templates (e.g. -p \"dest=example.com\")") // Accept multiple flag usages
@@ -56,7 +57,7 @@ func PrintFlagsByTopic() {
         "Proxy": []string{"port", "headers"},
         "Jaeles": []string{"jc", "jc-api"},
         "Scan": []string{"config", "proxy", "threads", "out", "p"},
-        "Misc": []string{"export-ca", "debug", "v", "stats"},
+        "Misc": []string{"export-ca", "debug", "v", "version", "stats"},
     }
 
     // Imprime as flags por tópico
