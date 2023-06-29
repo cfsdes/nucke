@@ -96,7 +96,7 @@ func StatusCodeFromRaw(raw string) (int) {
     // Check if the first line contains a valid status line
     if len(lines) < 1 {
         if globals.Debug {
-            fmt.Printf("Invalid Raw Response: empty string\n")
+            //fmt.Printf("Invalid Raw Response: empty string\n")
         }
         return 0
     }
