@@ -23,7 +23,7 @@ func Start(version string){
 	// Set Config Plugins
 	if globals.PluginsConfig != "" {
 		// Parse Config.yaml and Build Plugins
-		globals.Scope = ParseConfig(globals.PluginsConfig)
+		globals.Scope, globals.PluginPaths = ParseConfig(globals.PluginsConfig)
 
 		// Start interact.sh
 		globals.InteractURL = utils.StartInteractsh()

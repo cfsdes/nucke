@@ -29,7 +29,7 @@ type Config struct {
 
 var filePaths []string
 
-func ParseConfig(configFile string) (scope string){
+func ParseConfig(configFile string) (scope string, pluginPaths []string){
 	// Initial message
 	if globals.Debug {
 		Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
@@ -98,7 +98,7 @@ func ParseConfig(configFile string) (scope string){
 		CheckLoadedPlugins(filePaths, plugin.Ids)
 
 		// Build Plugins
-		BuildPlugins(filePaths)
+		pluginPaths = BuildPlugins(filePaths)
 	}
 
 	return
