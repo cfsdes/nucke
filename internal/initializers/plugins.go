@@ -22,13 +22,22 @@ func BuildPlugins(filePaths []string) ([]string) {
     // Array onde ficarão os caminhos para os arquivos .so
     var pluginsPath []string
 
+	// Obtém o diretório atual
+	originalDir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Sprintf("Error getting current directory: %v\n", err))
+	}
+
     // compila cada arquivo .go e salva o arquivo .so em ~/.nucke/compiled-plugins/
     for _, dir := range filePaths {
         // Pegando diretório do plugin.go
         compileDir := filepath.Dir(dir)
 
 		// Alterando para o diretório mainDir
-		os.Chdir(compileDir)
+		err = os.Chdir(compileDir)
+		if err != nil {
+			panic(fmt.Sprintf("Error changing directory to %s: %v\n", compileDir, err))
+		}
 
         // Compilando os plugins no diretório de cada um
         soFile := filepath.Join(compileDir, "."+filepath.Base(dir[:len(dir)-3])+".so")
@@ -42,6 +51,12 @@ func BuildPlugins(filePaths []string) ([]string) {
 
         pluginsPath = append(pluginsPath, soFile)
     }
+
+	// Retorna para o diretório original
+	err = os.Chdir(originalDir)
+	if err != nil {
+		panic(fmt.Sprintf("Error changing directory to original: %v\n", err))
+	}
 
     // return plugin .so paths
     return pluginsPath
