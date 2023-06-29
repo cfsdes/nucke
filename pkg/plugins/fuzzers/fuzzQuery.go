@@ -27,16 +27,14 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
 
     // Get request body, if method is POST
     var body []byte
-    if req.Method == http.MethodPost {
-        var err error
-        body, err = ioutil.ReadAll(req.Body)
-        if err != nil {
-            // handle error
-            if globals.Debug {
-                fmt.Println("fuzzQuery:",err)
-            }
-            return false, "", "", "", "", ""
+    var err error
+    body, err = ioutil.ReadAll(req.Body)
+    if err != nil {
+        // handle error
+        if globals.Debug {
+            fmt.Println("fuzzQuery:",err)
         }
+        return false, "", "", "", "", ""
     }
 
     // For each parameter, send a new request with the parameter replaced by a payload
@@ -61,10 +59,8 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             reqCopy := requests.CloneReq(req)
             reqCopy.URL.RawQuery = newParams.Encode()
 
-            // Add request body, if method is POST
-            if reqCopy.Method == http.MethodPost {
-                reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
-            }
+            // Add request body
+            reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
 
             // Get raw request
             rawReq := requests.RequestToRaw(reqCopy)

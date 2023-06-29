@@ -26,16 +26,14 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 
 	// Get request body, if method is POST
 	var body []byte
-	if req.Method == http.MethodPost {
-		var err error
-		body, err = ioutil.ReadAll(req.Body)
-		if err != nil {
-			// handle error
-			if globals.Debug {
-				fmt.Println("FuzzPath:", err)
-			}
-			return false, "", "", "", "", ""
+	var err error
+	body, err = ioutil.ReadAll(req.Body)
+	if err != nil {
+		// handle error
+		if globals.Debug {
+			fmt.Println("FuzzPath:", err)
 		}
+		return false, "", "", "", "", ""
 	}
 
 	// Determine the location to inject payloads
@@ -72,10 +70,8 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 			reqCopy := requests.CloneReq(req)
 			reqCopy.URL.Path = newPath
 
-			// Add request body, if method is POST
-			if reqCopy.Method == http.MethodPost {
-				reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
-			}
+			// Add request body
+			reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			// Get raw request
 			rawReq := requests.RequestToRaw(reqCopy)

@@ -104,7 +104,7 @@ func StatusCodeFromRaw(raw string) (int) {
     parts := strings.SplitN(lines[0], " ", 3)
     if len(parts) != 3 {
         if globals.Debug {
-            fmt.Printf("Invalid Raw Response: invalid status line: %s\n", lines[0])
+            //fmt.Printf("Invalid status line: %s\n", lines[0])
         }
         return 0
     }
@@ -113,7 +113,7 @@ func StatusCodeFromRaw(raw string) (int) {
     statusCode, err := strconv.Atoi(parts[1])
     if err != nil {
         if globals.Debug {
-            fmt.Printf("Invalid Raw Response: invalid status code: %s\n", parts[1])
+            fmt.Printf("Invalid status code: %s\n", parts[1])
         }
         return 0
     }

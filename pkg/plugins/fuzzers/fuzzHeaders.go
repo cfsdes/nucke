@@ -23,16 +23,14 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
 
     // Get request body, if method is POST
     var body []byte
-    if req.Method == http.MethodPost {
-        var err error
-        body, err = ioutil.ReadAll(req.Body)
-        if err != nil {
-            // handle error
-            if globals.Debug {
-                fmt.Println("fuzzHeaders:", err)
-            }
-            return false, "", "", "", "", ""
+    var err error
+    body, err = ioutil.ReadAll(req.Body)
+    if err != nil {
+        // handle error
+        if globals.Debug {
+            fmt.Println("fuzzHeaders:", err)
         }
+        return false, "", "", "", "", ""
     }
 
     totalResults := 0
@@ -53,10 +51,8 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
                 req2.Header.Set(header, payload)
             }
 
-            // Add request body, if method is POST
-            if req2.Method == http.MethodPost {
-                req2.Body = ioutil.NopCloser(bytes.NewReader(body))
-            }
+            // Add request body
+            req2.Body = ioutil.NopCloser(bytes.NewReader(body))
 
             // Get raw request
             rawReq := requests.RequestToRaw(req2)
