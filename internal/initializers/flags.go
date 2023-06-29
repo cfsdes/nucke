@@ -1,4 +1,4 @@
-package globals
+package initializers
 
 import (
 	"fmt"

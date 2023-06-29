@@ -8,7 +8,7 @@ import (
     "bufio"
     "strconv"
 
-    "github.com/cfsdes/nucke/internal/globals"
+    "github.com/cfsdes/nucke/pkg/globals"
 )
 
 func RequestToRaw(r *http.Request) string {

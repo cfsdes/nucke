@@ -11,7 +11,7 @@ import (
     "strings"
     "crypto/tls"
 
-    "github.com/cfsdes/nucke/internal/globals"
+    "github.com/cfsdes/nucke/pkg/globals"
     "github.com/cfsdes/nucke/pkg/requests"
     "github.com/cfsdes/nucke/pkg/report"
 )

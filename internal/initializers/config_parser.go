@@ -12,7 +12,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 	"github.com/fatih/color"
-	"github.com/cfsdes/nucke/internal/globals"
+	"github.com/cfsdes/nucke/pkg/globals"
 )
 
 type Plugin struct {

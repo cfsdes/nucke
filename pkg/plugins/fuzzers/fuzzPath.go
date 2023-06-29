@@ -10,7 +10,7 @@ import (
 
 	"github.com/cfsdes/nucke/pkg/plugins/detections"
 	"github.com/cfsdes/nucke/pkg/requests"
-	"github.com/cfsdes/nucke/internal/globals"
+	"github.com/cfsdes/nucke/pkg/globals"
 	"github.com/cfsdes/nucke/internal/parsers"
 	"github.com/cfsdes/nucke/pkg/plugins/utils"
 )

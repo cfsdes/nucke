@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cfsdes/nucke/internal/globals"
+	"github.com/cfsdes/nucke/pkg/globals"
 )
 
 // Parse response

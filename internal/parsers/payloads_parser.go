@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cfsdes/nucke/pkg/plugins/utils"
-	"github.com/cfsdes/nucke/internal/globals"
+	"github.com/cfsdes/nucke/pkg/globals"
 )
 
 func ParsePayload(payload string) string {

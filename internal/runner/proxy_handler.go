@@ -14,7 +14,7 @@ import (
     "sync/atomic"
 
     "github.com/fatih/color"
-    "github.com/cfsdes/nucke/internal/globals"
+    "github.com/cfsdes/nucke/pkg/globals"
     "github.com/cfsdes/nucke/internal/parsers"
     "github.com/cfsdes/nucke/pkg/requests"
 )

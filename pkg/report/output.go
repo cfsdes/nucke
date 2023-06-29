@@ -13,7 +13,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/cfsdes/nucke/internal/globals"
+	"github.com/cfsdes/nucke/pkg/globals"
 )
 
 func VulnerabilityOutput(scanName string, severity string, url string, summary string) {

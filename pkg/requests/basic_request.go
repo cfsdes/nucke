@@ -5,7 +5,7 @@ import (
     "time"
     "fmt"
 
-    "github.com/cfsdes/nucke/internal/globals"
+    "github.com/cfsdes/nucke/pkg/globals"
 )
 
 /**
