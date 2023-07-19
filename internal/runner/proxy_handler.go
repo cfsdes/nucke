@@ -100,13 +100,16 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
                 // adiciona 1 ao canal para indicar que está utilizando uma goroutine
                 ch <- 1
 
-                ScannerHandler(reqScan)
+                // Ensure the decrement is executed even if an error occurs during scan
+                defer func() {
+                    // Remove request from pendingRequests
+                    atomic.AddInt64(&globals.PendingScans, -1)
 
-                // Remove request from pendingRequests
-                atomic.AddInt64(&globals.PendingScans, -1)
-                
-                // sinaliza ao canal que a goroutine está livre
-                <-ch
+                    // sinaliza ao canal que a goroutine está livre
+                    <-ch
+                }()
+
+                ScannerHandler(reqScan)
             }()
         }
 	} 
