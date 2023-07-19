@@ -48,9 +48,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
 
     for key, value := range jsonData {
         for _, payload := range payloads {
-            // Update payloads {{.params}}
-            payload = parsers.ParsePayload(payload)
-            
+                       
             // Check if value is map. If yes, recursively check it to inject payload
             addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher)
         }
@@ -75,6 +73,8 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
             addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher)
         }
     } else {
+        // Update payloads {{.params}}
+        payload = parsers.ParsePayload(payload)
         loopScan(jsonData, key, payload, resultChan, req, client, matcher)
     }
 }
