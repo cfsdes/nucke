@@ -15,7 +15,7 @@ import (
 	"github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, location string) (bool, string, string, string, string, string) {
+func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, location string) (bool, string, string, string, string, string, []detections.Result) {
 	req := requests.CloneReq(r)
 
 	// Extract segments from URL path
@@ -23,6 +23,9 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 
 	// Result channel
 	resultChan := make(chan detections.Result)
+
+	// Array com os resultados de cada teste executado falho
+    var logScans []detections.Result
 
 	// Get request body, if method is POST
 	var body []byte
@@ -33,7 +36,7 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 		if globals.Debug {
 			fmt.Println("FuzzPath:", err)
 		}
-		return false, "", "", "", "", ""
+		return false, "", "", "", "", "", nil
 	}
 
 	// Determine the location to inject payloads
@@ -84,7 +87,7 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 				if globals.Debug {
 					fmt.Println("FuzzPath:", err)
 				}
-				return false, "", "", "", "", ""
+				return false, "", "", "", "", "", nil
 			}
 
 			// Get response time
@@ -102,9 +105,19 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 	for i := 0; i < len(injectIndexes)*len(payloads); i++ {
 		res := <-resultChan
 		if res.Found {
-			return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
-		}
+			return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
+		} else {
+            log := detections.Result{
+                Found: false,
+                RawReq: res.RawReq,
+                URL: res.URL,
+                Payload: res.Payload,
+                Param: res.Param,
+                RawResp: res.RawResp,
+            }
+            logScans = append(logScans, log)
+        }
 	}
 
-	return false, "", "", "", "", ""
+	return false, "", "", "", "", "", logScans
 }

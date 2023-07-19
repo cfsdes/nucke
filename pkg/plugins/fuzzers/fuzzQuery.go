@@ -16,7 +16,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
+func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
     
     // Extract parameters from URL
@@ -24,6 +24,9 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
 
     // Result channel
     resultChan := make(chan detections.Result)
+
+    // Array com os resultados de cada teste executado falho
+    var logScans []detections.Result
 
     // Get request body, if method is POST
     var body []byte
@@ -34,7 +37,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
         if globals.Debug {
             fmt.Println("fuzzQuery:",err)
         }
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     // For each parameter, send a new request with the parameter replaced by a payload
@@ -73,7 +76,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
                 if globals.Debug {
                     fmt.Println("fuzzQuery:",err)
                 }
-                return false, "", "", "", "", ""
+                return false, "", "", "", "", "", nil
             }
             
             // Get response time
@@ -91,9 +94,19 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
     for i := 0; i < len(params)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
+        } else {
+            log := detections.Result{
+                Found: false,
+                RawReq: res.RawReq,
+                URL: res.URL,
+                Payload: res.Payload,
+                Param: res.Param,
+                RawResp: res.RawResp,
+            }
+            logScans = append(logScans, log)
         }
     }
 
-    return false, "", "", "", "", ""
+    return false, "", "", "", "", "", logScans
 }

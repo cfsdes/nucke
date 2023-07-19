@@ -16,15 +16,18 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
+func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
 
     // Result channel
     resultChan := make(chan detections.Result)
 
+    // Array com os resultados de cada teste executado falho
+    var logScans []detections.Result
+
     // Check if content type is XML
     if req.Header.Get("Content-Type") != "application/xml" && req.Header.Get("Content-Type") != "text/xml" {
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     // Get request body
@@ -33,7 +36,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
         if globals.Debug {
             fmt.Println("fuzzXML:",err)
         }
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     // Restore request body
@@ -70,7 +73,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
                 if globals.Debug {
                     fmt.Println("fuzzXML:",err)
                 }
-                return false, "", "", "", "", ""
+                return false, "", "", "", "", "", nil
             }
 
             // Get response time
@@ -88,11 +91,21 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     for i := 0; i < len(matches)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
+        } else {
+            log := detections.Result{
+                Found: false,
+                RawReq: res.RawReq,
+                URL: res.URL,
+                Payload: res.Payload,
+                Param: res.Param,
+                RawResp: res.RawResp,
+            }
+            logScans = append(logScans, log)
         }
     }
 
-    return false, "", "", "", "", ""
+    return false, "", "", "", "", "", logScans
 }
 
 

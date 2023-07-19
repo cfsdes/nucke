@@ -17,15 +17,18 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
+func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
 
     // Result channel
     resultChan := make(chan detections.Result)
+
+    // Array com os resultados de cada teste executado falho
+    var logScans []detections.Result
     
     // check if request is JSON
     if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     // Read request body
@@ -34,7 +37,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     // Create obj based on json data
@@ -43,7 +46,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         if globals.Debug {
             fmt.Println("fuzzJSON:",err)
         }
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     for key, value := range jsonData {
@@ -58,11 +61,21 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     for i := 0; i < len(jsonData)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
+        } else {
+            log := detections.Result{
+                Found: false,
+                RawReq: res.RawReq,
+                URL: res.URL,
+                Payload: res.Payload,
+                Param: res.Param,
+                RawResp: res.RawResp,
+            }
+            logScans = append(logScans, log)
         }
     }
 
-    return false, "", "", "", "", ""
+    return false, "", "", "", "", "", logScans
 }
 
 // function to add payload to JSON

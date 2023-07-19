@@ -65,7 +65,7 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 			resultChan <- Result{false, rawReq, url, payload, parameter, rawResp}
 		}
 	} else {
-		resultChan <- Result{false, "", "", "", "", ""}
+		resultChan <- Result{false, rawReq, url, payload, parameter, rawResp}
 	}
 }
 

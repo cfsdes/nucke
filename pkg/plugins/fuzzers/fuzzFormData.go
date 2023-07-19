@@ -14,15 +14,18 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string) {
+func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
     
     // Result channel
     resultChan := make(chan detections.Result)
 
+    // Array com os resultados de cada teste executado falho
+    var logScans []detections.Result
+
     // Check if method is POST and content type is application/x-www-form-urlencoded
     if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-        return false, "", "", "", "", ""
+        return false, "", "", "", "", "", nil
     }
 
     // Get form data parameters from request body
@@ -30,7 +33,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
         if globals.Debug {
             fmt.Println("fuzzFormData:",err)
         }
-        return false, "", "", "", "", "" 
+        return false, "", "", "", "", "", nil 
     }
 
     // Get request body
@@ -59,7 +62,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
                 if globals.Debug {
                     fmt.Println("fuzzFormData:",err)
                 }
-                return false, "", "", "", "", ""
+                return false, "", "", "", "", "", nil
             }
 
             // Copy headers from original request to new request
@@ -75,7 +78,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
                 if globals.Debug {
                     fmt.Println("fuzzFormData:",err)
                 }
-                return false, "", "", "", "", ""
+                return false, "", "", "", "", "", nil
             }
 
             // Get response time
@@ -93,10 +96,20 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
     for i := 0; i < len(req.PostForm)*len(payloads); i++ {
         res := <-resultChan
         if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp
+            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
+        } else {
+            log := detections.Result{
+                Found: false,
+                RawReq: res.RawReq,
+                URL: res.URL,
+                Payload: res.Payload,
+                Param: res.Param,
+                RawResp: res.RawResp,
+            }
+            logScans = append(logScans, log)
         }
     }
 
-    return false, "", "", "", "", ""
+    return false, "", "", "", "", "", logScans
 }
 
