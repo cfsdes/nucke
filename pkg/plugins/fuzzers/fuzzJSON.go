@@ -70,6 +70,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
                 Payload: res.Payload,
                 Param: res.Param,
                 RawResp: res.RawResp,
+                ResBody: res.ResBody,
             }
             logScans = append(logScans, log)
         }

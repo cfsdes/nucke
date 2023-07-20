@@ -105,6 +105,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
                 Payload: res.Payload,
                 Param: res.Param,
                 RawResp: res.RawResp,
+                ResBody: res.ResBody,
             }
             logScans = append(logScans, log)
         }

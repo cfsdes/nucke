@@ -42,4 +42,5 @@ type Result struct {
 	Payload string
 	Param string
 	RawResp string
+	ResBody string
 }

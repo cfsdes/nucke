@@ -53,19 +53,19 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 					break
 				}
 			}
-			resultChan <- Result{allTrue, rawReq, url, payload, parameter, rawResp}
+			resultChan <- Result{allTrue, rawReq, url, payload, parameter, rawResp, resBody}
 
 		// OR condition
 		} else if m.Operator == "OR" {
 			for _, value := range foundArray {
 				if value {
-					resultChan <- Result{true, rawReq, url, payload, parameter, rawResp}
+					resultChan <- Result{true, rawReq, url, payload, parameter, rawResp, resBody}
 				}
 			}
-			resultChan <- Result{false, rawReq, url, payload, parameter, rawResp}
+			resultChan <- Result{false, rawReq, url, payload, parameter, rawResp, resBody}
 		}
 	} else {
-		resultChan <- Result{false, rawReq, url, payload, parameter, rawResp}
+		resultChan <- Result{false, rawReq, url, payload, parameter, rawResp, resBody}
 	}
 }
 
