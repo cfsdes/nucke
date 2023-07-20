@@ -65,14 +65,6 @@ func StartProxy() {
 // Proxy Handler
 func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 
-    // Convert the raw request to base64
-	requestBytes, err := httputil.DumpRequest(req, true)
-    if err != nil {
-        fmt.Println("requestHandler: Error converting rawRequest: ",err)
-    }
-    requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
-
-
     // Send request to jaeles API server and filter if scope is specified
     if (globals.Scope != "" && regexp.MustCompile(globals.Scope).MatchString(req.URL.String()) || globals.Scope == "") {
         
@@ -84,6 +76,13 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 
         // If jaeles scan is enabled
         if globals.Jaeles {
+            // Convert the raw request to base64
+            requestBytes, err := httputil.DumpRequest(req, true)
+            if err != nil {
+                fmt.Println("requestHandler: Error converting rawRequest: ",err)
+            }
+            requestBase64 := base64.StdEncoding.EncodeToString(requestBytes)
+
             parsers.SendToJaeles(requestBase64, globals.JaelesApi)
         }
 
@@ -115,10 +114,10 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 	} 
 
     // Clone original request
-    reqCopy := requests.CloneReq(req)
+    //reqCopy := requests.CloneReq(req)
 
     // Defina a lógica para lidar com a requisição aqui
-    return reqCopy, nil
+    return req, nil
 }
 
 // Function to export CA certificates

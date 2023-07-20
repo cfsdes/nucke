@@ -4,6 +4,8 @@ import (
 	"fmt"
     "net/http"
 	"github.com/fatih/color"
+	_ "net/http/pprof"
+
 
 	"github.com/cfsdes/nucke/pkg/globals"
 
