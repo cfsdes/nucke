@@ -49,6 +49,9 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         return false, "", "", "", "", "", nil
     }
 
+    // Calculate the total number of parameters (recursively)
+    totalParams := countParams(jsonData)
+
     for key, value := range jsonData {
         for _, payload := range payloads {
                        
@@ -58,7 +61,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     }
 
     // Wait for any goroutine to send a result to the channel
-    for i := 0; i < len(jsonData)*len(payloads); i++ {
+    for i := 0; i < totalParams * len(payloads); i++ {
         res := <-resultChan
         if res.Found {
             return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
@@ -178,3 +181,15 @@ func createNewRequest(req *http.Request, reqBody *bytes.Reader) (*http.Request, 
 }
 
 
+// Count the total number of parameters recursively in the JSON data
+func countParams(jsonData map[string]interface{}) int {
+    count := 0
+    for _, value := range jsonData {
+        if innerMap, ok := value.(map[string]interface{}); ok {
+            count += countParams(innerMap)
+        } else {
+            count++
+        }
+    }
+    return count
+}
