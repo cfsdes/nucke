@@ -19,9 +19,10 @@ func (h *headersFlag) Set(value string) error {
 	return nil
 }
 
-func ParseFlags() (port string, threads int, jcAPI string, jc bool, proxy string, config string, output string, exportCA bool, debug bool, version bool, stats bool, listPlugins bool, headers headersFlag, parameters headersFlag) {
+func ParseFlags() (port string, threads int, delay int, jcAPI string, jc bool, proxy string, config string, output string, exportCA bool, debug bool, version bool, stats bool, listPlugins bool, headers headersFlag, parameters headersFlag) {
 	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8888)")
     flag.IntVar(&threads, "threads", 10, "threads to use during plugin scan (default: 10)")
+    flag.IntVar(&delay, "delay", 0, "delay between fuzz requests in milliseconds (default: 0)")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
     flag.BoolVar(&jc, "jc", false, "enable jaeles proxy")
     flag.StringVar(&proxy, "proxy", "", "http proxy to use during scans")
@@ -56,7 +57,7 @@ func PrintFlagsByTopic() {
     topics := map[string][]string{
         "Proxy": []string{"port", "headers"},
         "Jaeles": []string{"jc", "jc-api"},
-        "Scan": []string{"config", "proxy", "threads", "out", "p", "stats"},
+        "Scan": []string{"config", "proxy", "threads", "delay", "out", "p", "stats"},
         "Misc": []string{"export-ca", "debug", "list-plugins", "version"},
     }
 

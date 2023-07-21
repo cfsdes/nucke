@@ -48,6 +48,9 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
     for _, match := range matches {
         for _, payload := range payloads {
 
+            // Delay between requests
+            time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
+
             // Update payloads {{.params}}
             payload = parsers.ParsePayload(payload)
 
