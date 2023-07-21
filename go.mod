@@ -1,4 +1,4 @@
-module github.com/cfsdes/nucke
+module github.com/cfsdes/nucke/v2
 
 go 1.20
 
