@@ -63,21 +63,23 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
     // Wait for any goroutine to send a result to the channel
     for i := 0; i < totalParams * len(payloads); i++ {
         res := <-resultChan
-        if res.Found {
-            return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, nil
-        } else {
-            log := detections.Result{
-                Found: false,
-                RawReq: res.RawReq,
-                URL: res.URL,
-                Payload: res.Payload,
-                Param: res.Param,
-                RawResp: res.RawResp,
-                ResBody: res.ResBody,
-            }
-            logScans = append(logScans, log)
+        log := detections.Result{
+            Found: res.Found,
+            RawReq: res.RawReq,
+            URL: res.URL,
+            Payload: res.Payload,
+            Param: res.Param,
+            RawResp: res.RawResp,
+            ResBody: res.ResBody,
         }
+        logScans = append(logScans, log)
     }
+
+    for _, res := range logScans {
+		if res.Found {
+			return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, logScans
+		}
+	}
 
     return false, "", "", "", "", "", logScans
 }
