@@ -13,7 +13,7 @@ func CheckAuth(r *http.Request, client *http.Client) bool {
 	req := CloneReq(r)
 
 	// Send Original Request
-    _, originalResBody, _, _, _ := BasicRequest(req, client)
+    _, originalResBody, originalStatusCode, _, _ := BasicRequest(req, client)
 
     // Remove auth headers
     req.Header.Del("Cookie")
@@ -30,8 +30,10 @@ func CheckAuth(r *http.Request, client *http.Client) bool {
 	// Get response body
     statusCode, unauthResBody, _, _ := ParseResponse(resp)
 
-	// Compare if original response is less than 95% equal from the unauth Response
-	if (utils.TextSimilarity(originalResBody, unauthResBody) < 0.7 && statusCode != 429) {
+	// Compare if original response is less than 90% equal from the unauth Response
+	if (utils.TextSimilarity(originalResBody, unauthResBody) < 0.9 && statusCode != 429) {
+		return true
+	} else if (originalStatusCode != statusCode && statusCode != 429) {
 		return true
 	} else {
 		return false
