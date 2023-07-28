@@ -117,7 +117,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
     reqCopy := requests.CloneReq(req)
 
     // Defina a lógica para lidar com a requisição aqui
-    return req, nil
+    return reqCopy, nil
 }
 
 // Function to export CA certificates
