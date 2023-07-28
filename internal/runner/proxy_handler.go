@@ -114,7 +114,7 @@ func requestHandler(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *h
 	} 
 
     // Clone original request
-    //reqCopy := requests.CloneReq(req)
+    reqCopy := requests.CloneReq(req)
 
     // Defina a lógica para lidar com a requisição aqui
     return req, nil
