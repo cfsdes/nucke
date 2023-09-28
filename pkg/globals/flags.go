@@ -20,14 +20,14 @@ func (h *headersFlag) Set(value string) error {
 }
 
 func ParseFlags() (port string, threads int, delay int, jcAPI string, jc bool, proxy string, config string, output string, exportCA bool, debug bool, version bool, stats bool, listPlugins bool, headers headersFlag, parameters headersFlag) {
-	flag.StringVar(&port, "port", "8888", "proxy port to use (default: 8888)")
-    flag.IntVar(&threads, "threads", 10, "threads to use during plugin scan (default: 10)")
-    flag.IntVar(&delay, "delay", 0, "delay between fuzz requests in milliseconds (default: 0)")
+	flag.StringVar(&port, "port", "8888", "Proxy port to use (default: 8888)")
+    flag.IntVar(&threads, "threads", 10, "Threads to use during plugin scan (default: 10)")
+    flag.IntVar(&delay, "delay", 0, "Delay between fuzz requests in milliseconds (default: 0)")
     flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
-    flag.BoolVar(&jc, "jc", false, "enable jaeles proxy")
-    flag.StringVar(&proxy, "proxy", "", "http proxy to use during scans")
-    flag.StringVar(&config, "config", "", "yaml config file with plugins to scan")
-    flag.StringVar(&output, "out", "", "output directory to save scan results")
+    flag.BoolVar(&jc, "jc", false, "Enable jaeles proxy")
+    flag.StringVar(&proxy, "proxy", "", "HTTP proxy to use during scans")
+    flag.StringVar(&config, "config", "", "Yaml config file with plugins to scan")
+    flag.StringVar(&output, "out", "", "Output directory to save scan results")
     flag.BoolVar(&exportCA, "export-ca", false, "Export proxy PEM certificate")
     flag.BoolVar(&debug, "debug", false, "Return debug error messages")
     flag.BoolVar(&version, "version", false, "Return Nucke's version")
