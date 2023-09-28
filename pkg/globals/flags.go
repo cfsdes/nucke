@@ -23,7 +23,7 @@ func ParseFlags() (port string, threads int, delay int, jcAPI string, jc bool, p
 	flag.StringVar(&port, "port", "8888", "Proxy port to use (default: 8888)")
     flag.IntVar(&threads, "threads", 10, "Threads to use during plugin scan (default: 10)")
     flag.IntVar(&delay, "delay", 0, "Delay between fuzz requests in milliseconds (default: 0)")
-    flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "jaeles API server (default: http://127.0.0.1:5000)")
+    flag.StringVar(&jcAPI, "jc-api", "http://127.0.0.1:5000", "Jaeles API server (default: http://127.0.0.1:5000)")
     flag.BoolVar(&jc, "jc", false, "Enable jaeles proxy")
     flag.StringVar(&proxy, "proxy", "", "HTTP proxy to use during scans")
     flag.StringVar(&config, "config", "", "Yaml config file with plugins to scan")
