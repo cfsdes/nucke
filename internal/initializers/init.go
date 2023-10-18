@@ -26,7 +26,7 @@ func Start(version string){
 		globals.Scope, globals.PluginPaths = ParseConfig(globals.PluginsConfig)
 
 		// Start interact.sh
-		globals.InteractURL = utils.StartInteractsh()
+		utils.StartInteractsh()
 	}
 
 	// Create Output Path

@@ -18,7 +18,7 @@ var interactOutput string = "/tmp/nucke-interact"
 var interactSession string = "/tmp/nucke-interact-session"
 var cmd *exec.Cmd
 
-func StartInteractsh() string {
+func StartInteractsh() {
     // Removing old session files
     deleteFileIfExists(interactSession)
 
@@ -27,16 +27,14 @@ func StartInteractsh() string {
 	fmt.Printf("[%s] Starting interactsh...\n", Cyan("INF"))
 
     // Start interact first time
-    interactURL := startInteractSession()
+    startInteractSession()
 
     // restart interact in background every 1 hour
     go restartInteract()
-
-    return interactURL
 }
 
 // Start Interactsh
-func startInteractSession() string {
+func startInteractSession() {
 
     // Start interactsh client and save session file
     cmd = exec.Command("interactsh-client", "-sf", interactSession)
@@ -77,7 +75,8 @@ func startInteractSession() string {
             re := regexp.MustCompile(`[a-zA-Z0-9]+\.oast\.[a-zA-Z0-9]+`)
             match := re.FindString(line)
             if match != "" {
-                return match// Exit the loop if match is found
+                globals.InteractURL = match// Exit the loop if match is found
+                return
             }
         }
 
