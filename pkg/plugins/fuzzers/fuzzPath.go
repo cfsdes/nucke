@@ -84,14 +84,7 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 
 			// Send request
 			start := time.Now()
-			resp, err := client.Do(reqCopy)
-			if err != nil {
-				// handle error
-				if globals.Debug {
-					fmt.Println("FuzzPath:", err)
-				}
-				return false, "", "", "", "", "", nil
-			}
+			responses := requests.Do(reqCopy, client)
 
 			// Get response time
 			elapsed := int(time.Since(start).Seconds())
@@ -100,7 +93,9 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 			oobID := utils.ExtractOobID(payload)
 
 			// Check if match vulnerability
-			go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", index), resultChan)
+			for _, resp := range responses {
+				go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", index), resultChan)
+			}
 		}
 	}
 

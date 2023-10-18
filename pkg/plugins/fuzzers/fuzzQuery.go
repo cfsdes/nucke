@@ -73,23 +73,18 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
 
             // Send request
             start := time.Now()
-            resp, err := client.Do(reqCopy)
-            if err != nil {
-                // handle error
-                if globals.Debug {
-                    fmt.Println("fuzzQuery:",err)
-                }
-                return false, "", "", "", "", "", nil
-            }
-            
+            responses := requests.Do(reqCopy, client)
+
             // Get response time
             elapsed := int(time.Since(start).Seconds())
 
             // Extract OOB ID
             oobID := utils.ExtractOobID(payload)
-
+            
             // Check if match vulnerability
-            go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+            for _, resp := range responses {
+                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+            }
         }
     }
 

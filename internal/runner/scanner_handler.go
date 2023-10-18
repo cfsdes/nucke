@@ -3,7 +3,9 @@ package runner
 import (
 	"net/http"
 	"net/url"
+    "net/http/cookiejar"
 	"fmt"
+    "time"
 	"os"
     "plugin"
 	"path/filepath"
@@ -31,7 +33,10 @@ func ScannerHandler(req *http.Request) {
 
 // Generate HTTP Client with Proxy
 func createHTTPClient() (*http.Client, error) {
+    // Configure jar cookies to HTTP client
+	jar, _ := cookiejar.New(nil)
     var client *http.Client
+
     if globals.Proxy != "" {
         // Create HTTP client with proxy
         proxyUrl, err := url.Parse(globals.Proxy)
@@ -44,6 +49,12 @@ func createHTTPClient() (*http.Client, error) {
                 TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
                 Proxy: http.ProxyURL(proxyUrl),
             },
+            CheckRedirect: func(req *http.Request, via []*http.Request) error {
+                // Don't allow automatic redirects
+                return http.ErrUseLastResponse
+            },
+            Timeout: time.Second * 240, // 4min timeout
+            Jar: jar,
         }
     } else {
         // Create HTTP client without proxy
@@ -52,6 +63,12 @@ func createHTTPClient() (*http.Client, error) {
                 TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
                 DisableKeepAlives: true,
             },
+            CheckRedirect: func(req *http.Request, via []*http.Request) error {
+                // Don't allow automatic redirects
+                return http.ErrUseLastResponse
+            },
+            Timeout: time.Second * 240, // 4min timeout
+            Jar: jar,
         }
     }
     return client, nil

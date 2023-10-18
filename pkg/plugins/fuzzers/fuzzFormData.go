@@ -76,13 +76,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
 
             // Send request
             start := time.Now()
-            resp, err := client.Do(newReq)
-            if err != nil {
-                if globals.Debug {
-                    fmt.Println("fuzzFormData:",err)
-                }
-                return false, "", "", "", "", "", nil
-            }
+            responses := requests.Do(newReq, client)
 
             // Get response time
             elapsed := int(time.Since(start).Seconds())
@@ -91,7 +85,9 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
             oobID := utils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+            for _, resp := range responses {
+                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+            }
         }
     }
 

@@ -128,12 +128,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
 
     // Make request
     start := time.Now()
-    resp, err := client.Do(newReq)
-    if err != nil {
-        if globals.Debug {
-            fmt.Println("fuzzJSON:",err)
-        }
-    }
+    responses := requests.Do(newReq, client)
 
     // Get response time
     elapsed := int(time.Since(start).Seconds())
@@ -142,7 +137,9 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
     oobID := utils.ExtractOobID(payload)
 
     // Check if match vulnerability
-    go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+    for _, resp := range responses {
+        go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+    }
 }
 
 // Convert bytes to JSON

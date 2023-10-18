@@ -71,13 +71,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
 
             // Send request
             start := time.Now()
-            resp, err := client.Do(reqCopy)
-            if err != nil {
-                if globals.Debug {
-                    fmt.Println("fuzzXML:",err)
-                }
-                return false, "", "", "", "", "", nil
-            }
+            responses := requests.Do(reqCopy, client)
 
             // Get response time
             elapsed := int(time.Since(start).Seconds())
@@ -86,7 +80,9 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
             oobID := utils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, match[0], resultChan)
+            for _, resp := range responses {
+                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, match[0], resultChan)
+            }
         }
     }
 

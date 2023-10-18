@@ -66,14 +66,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
 
             // Send request
             start := time.Now()
-            resp, err := client.Do(req2)
-            if err != nil {
-                // handle error
-                if globals.Debug {
-                    fmt.Println("fuzzHeaders:", err)
-                }
-                return false, "", "", "", "", "", nil
-            }
+            responses := requests.Do(req2, client)
 
             // Get response time
             elapsed := int(time.Since(start).Seconds())
@@ -82,7 +75,9 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
             oobID := utils.ExtractOobID(payload)
 
             // Check if match vulnerability
-            go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, strings.Join(headers, ","), resultChan)
+            for _, resp := range responses {
+                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, strings.Join(headers, ","), resultChan)
+            }
         }
     } else {
         totalResults = len(headers) * len(payloads)
@@ -113,14 +108,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
 
                 // Send request
                 start := time.Now()
-                resp, err := client.Do(req2)
-                if err != nil {
-                    // handle error
-                    if globals.Debug {
-                        fmt.Println("fuzzHeaders:", err)
-                    }
-                    return false, "", "", "", "", "", nil
-                }
+                responses := requests.Do(req2, client)
 
                 // Get response time
                 elapsed := int(time.Since(start).Seconds())
@@ -129,7 +117,9 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
                 oobID := utils.ExtractOobID(payload)
 
                 // Check if match vulnerability
-                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, header, resultChan)
+                for _, resp := range responses {
+                    go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, header, resultChan)
+                }
             }
         }
     }
