@@ -37,7 +37,7 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 		found := MatchMathOperation(m.StatusCode.Code,m.StatusCode.Operator, statusCode)
 		foundArray = append(foundArray, found)
 	}
-	if m.OOB && oobID != "" {
+	if m.OOB {
 		found := utils.CheckOobInteraction(oobID)
 		foundArray = append(foundArray, found)
 	}

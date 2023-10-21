@@ -145,6 +145,10 @@ func ExtractOobID(url string) string {
 
 // Function to check interactsh interaction
 func CheckOobInteraction(oobID string) bool {
+    // Return false if payload is not oob
+    if oobID == "" {
+        return false
+    }
 
     // Wait some seconds before analyze
     time.Sleep(15 * time.Second)
