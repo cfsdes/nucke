@@ -48,6 +48,10 @@ func CloneReq(req *http.Request) *http.Request {
     // Add Accept-Encoding: gzip, deflate
     newReq.Header.Set("Accept-Encoding", "gzip, deflate")
 
+    // Delete If-None-Match
+    newReq.Header.Del("If-None-Match")
+    newReq.Header.Del("If-Modified-Since")
+
     // Add the body of the original request to the new one
     requestBytes, err := httputil.DumpRequest(req, true)
     if err != nil {
