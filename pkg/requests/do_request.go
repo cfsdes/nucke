@@ -12,7 +12,10 @@ import (
 * Return all responses in a slice format. One response for each redirect + the final response
 */
 
-func Do(req *http.Request, client *http.Client) ([]*http.Response) {
+func Do(r *http.Request, client *http.Client) ([]*http.Response) {
+	// Clone Req
+	req := CloneReq(r)
+
 	responses := []*http.Response{}
 	redirectLimit := 10 // Define o limite de redirecionamentos
 
