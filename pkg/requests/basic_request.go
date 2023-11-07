@@ -3,9 +3,6 @@ package requests
 import (
 	"net/http"
     "time"
-    "fmt"
-
-    "github.com/cfsdes/nucke/pkg/globals"
 )
 
 /**
@@ -13,24 +10,19 @@ import (
 */
 
 func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[string][]string, string) {
-    req := CloneReq(r)
-
-    if client == nil {
-        client = &http.Client{}
-    }
-
-    // Send the request
+    
     start := time.Now()
-    resp, err := client.Do(req)
-    if err != nil {
-        if globals.Debug {
-            fmt.Println("Basic Request Error:",err)
-        }
-        return 0, "", 0, nil, ""
-    }
+
+    // Send request
+    responses := Do(r, client)
+
+    // Get last array value
+	lastIndex := len(responses) - 1
+	lastResp := responses[lastIndex]
+
 
     // Get response body
-    statusCode, responseBody, responseHeaders, rawResponse := ParseResponse(resp)
+    statusCode, responseBody, responseHeaders, rawResponse := ParseResponse(lastResp)
 	
     // Get response time
     elapsed := int(time.Since(start).Seconds())
