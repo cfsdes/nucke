@@ -6,7 +6,7 @@ import (
     "github.com/cfsdes/nucke/internal/initializers"
 )
 
-var version = "v0.1.1"
+var version = "v0.1.2"
 
 func main() {
     initializers.Start(version)
