@@ -93,7 +93,7 @@ func getOutputPath(urlString string, scanName string, summary string) string {
 	hashString := hex.EncodeToString(hash[:])
 
 	// filename
-	fileName := scanName + "-" + hashString
+	fileName := scanName + "-" + hashString + ".md"
 
 	// set output path
 	outputPath := filepath.Join(globals.Output, domain, fileName)
