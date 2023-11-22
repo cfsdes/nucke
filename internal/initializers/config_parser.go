@@ -18,6 +18,7 @@ import (
 type Plugin struct {
 	Name    string   `yaml:"name"`
 	Path    string   `yaml:"path"`
+	Webhook string   `yaml:"webhook"`
 	Ids     []string `yaml:"ids"`
 	Exclude []string `yaml:"exclude,omitempty"`
 }
@@ -51,6 +52,9 @@ func ParseConfig(configFile string) (scope string, pluginPaths []string){
 
 	// Get Scope from Config.yaml
 	scope = config.Scope
+
+	// Initialize map array
+	globals.Webhook = make(map[string][]string)
 
 	// Iterate over plugins and get the file path
 	for _, plugin := range config.Plugins {
@@ -99,6 +103,9 @@ func ParseConfig(configFile string) (scope string, pluginPaths []string){
 
 		// Build Plugins
 		pluginPaths = BuildPlugins(filePaths)
+
+		// Criar array para webhook
+		globals.Webhook[plugin.Webhook] = pluginPaths
 	}
 
 	return
