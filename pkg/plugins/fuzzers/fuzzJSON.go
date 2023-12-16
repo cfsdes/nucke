@@ -176,6 +176,7 @@ func createNewJSONData(jsonData map[string]interface{}, key string, payload stri
             // Se o valor da key do json for um array, adicionar o payload no array
             } else if _, isArray := v.([]interface{}); isArray {
                 var result []interface{}
+                payload  = strings.Replace(payload, "{{.original}}", "", -1)
                 if err := json.Unmarshal([]byte(payload), &result); err != nil {
                     fmt.Println("Erro ao decodificar a string JSON:", err)
                 }
