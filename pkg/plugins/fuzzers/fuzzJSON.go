@@ -14,6 +14,7 @@ import (
     "github.com/cfsdes/nucke/pkg/globals"
     "github.com/cfsdes/nucke/internal/parsers"
     "github.com/cfsdes/nucke/pkg/plugins/utils"
+    "github.com/fatih/color"
 )
 
 
@@ -91,6 +92,19 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
         for innerKey, innerValue := range innerMap {
             addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher)
         }
+    } else if innerArray, ok := value.([]interface{}); ok {
+        // Se for um array, não faz nada
+        payload = parsers.ParsePayload(payload)
+        newInnerArray := append(innerArray, payload)
+        updatedArrayStr, err := json.Marshal(newInnerArray)
+        if err != nil && globals.Debug {
+            // Print error
+            Red := color.New(color.FgBlue, color.Bold).SprintFunc()
+            fmt.Printf("[%s] Error FuzzJSON: %v\n", Red("ERR"), err)
+        }
+        
+        loopScan(jsonData, key, string(updatedArrayStr), resultChan, req, client, matcher)
+
     } else {
         // Update payloads {{.params}}
         payload = parsers.ParsePayload(payload)
@@ -155,8 +169,19 @@ func createNewJSONData(jsonData map[string]interface{}, key string, payload stri
     newJsonData := make(map[string]interface{})
     for k, v := range jsonData {
         if k == key {
+            // Se o valor da key do json for um obj, iterar novamente
             if m, ok := v.(map[string]interface{}); ok {
                 newJsonData[k] = createNewJSONData(m, key, payload)
+            
+            // Se o valor da key do json for um array, adicionar o payload no array
+            } else if _, isArray := v.([]interface{}); isArray {
+                var result []interface{}
+                if err := json.Unmarshal([]byte(payload), &result); err != nil {
+                    fmt.Println("Erro ao decodificar a string JSON:", err)
+                }
+                newJsonData[k] = result
+
+            // Se o valor da key do json for uma string, substituir com o payload
             } else {
                 originalValue := fmt.Sprintf("%v", v)
                 payload  = strings.Replace(payload, "{{.original}}", originalValue, -1)
@@ -172,6 +197,7 @@ func createNewJSONData(jsonData map[string]interface{}, key string, payload stri
     }
     return newJsonData
 }
+
 
 // Create new HTTP Request
 func createNewRequest(req *http.Request, reqBody *bytes.Reader) (*http.Request, error) {
