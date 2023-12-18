@@ -99,7 +99,7 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
         updatedArrayStr, err := json.Marshal(newInnerArray)
         if err != nil && globals.Debug {
             // Print error
-            Red := color.New(color.FgBlue, color.Bold).SprintFunc()
+            Red := color.New(color.FgRed, color.Bold).SprintFunc()
             fmt.Printf("[%s] Error FuzzJSON: %v\n", Red("ERR"), err)
         }
         

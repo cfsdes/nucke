@@ -12,7 +12,7 @@ import (
 
 // Envia request JSON POST para o webhook sobre a vulnerabilidade identificada
 func Notify(scanName string, severity string, url string, summary string, webhook string) {
-	Red := color.New(color.FgBlue, color.Bold).SprintFunc()
+	Red := color.New(color.FgRed, color.Bold).SprintFunc()
 	Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
 
 	// Verificar se webhook não está vazio
