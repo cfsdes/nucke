@@ -146,50 +146,7 @@ func listFiles(dirPath string, ext string) []string {
 }
 
 
-// Auxiliar function (download GitHub repository and update plugin path)
-func downloadRepository(plugin Plugin) (Plugin) {
-	// Create ~/.nucke/repositories directory if it doesn't exist
-	repoDir := filepath.Join(os.Getenv("HOME"), ".nucke", "repositories")
-	err := os.MkdirAll(repoDir, 0755)
-	if err != nil {
-		log.Fatalf("Error creating repository directory: %v", err)
-	}
-
-	// Modify plugin.Path to use SSH pattern
-	sshPath := fmt.Sprintf("git@github.com:%s/%s.git", strings.Split(plugin.Path, "/")[1], strings.Split(plugin.Path, "/")[2])
-	destinationPath := filepath.Join(repoDir, strings.Split(plugin.Path, "/")[2])
-
-	// Check if repository is already cloned
-	if _, err := os.Stat(destinationPath); err == nil {
-		// Repository already cloned, update it
-		pullCmd := exec.Command("git", "pull")
-		pullCmd.Dir = destinationPath
-		err = pullCmd.Run()
-		if err != nil {
-			log.Fatalf("Error updating repository: %v", err)
-		}
-	} else {
-		// Repository not cloned, clone it
-		cloneCmd := exec.Command("git", "clone", sshPath, destinationPath)
-		err = cloneCmd.Run()
-		if err != nil {
-			log.Fatalf("Error cloning repository: %v", err)
-		}
-	}
-
-	// Update plugin.Path to the local directory
-	plugin.Path = filepath.Join(repoDir, strings.Join(strings.Split(plugin.Path, "/")[2:], "/"))
-
-	return plugin
-}
-
-
 func formatPluginPath(plugin Plugin) (Plugin) {
-
-	// Atualizando o path para o diretorio correto
-	if strings.HasPrefix(plugin.Path, "github.com/") {
-		return downloadRepository(plugin)
-	}
 
 	// Ajustar ~ para HOME
 	if strings.HasPrefix(plugin.Path, "~/") {
