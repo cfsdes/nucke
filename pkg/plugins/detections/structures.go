@@ -37,10 +37,10 @@ type HeaderMatcher struct {
 // Result structure
 type Result struct {
 	Found bool
-	RawReq string
 	URL string
 	Payload string
 	Param string
+	RawReq string
 	RawResp string
 	ResBody string
 }

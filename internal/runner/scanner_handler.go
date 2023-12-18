@@ -108,11 +108,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
     scanName = strings.TrimPrefix(scanName, ".") // e.g: sqli
 
     // Call the run() function with a req argument
-	severity, url, summary, found, rawResp, err := runFunc.(func(*http.Request, *http.Client, string) (string, string, string, bool, string, error))(req, client, pluginDir)
-    if err != nil {
-        fmt.Println("Error running plugin:", err)
-        os.Exit(1)
-    }
+	found, severity, url, payload, param, rawReq, rawResp := runFunc.(func(*http.Request, *http.Client, string) (bool, string, string, string, string, string, string))(req, client, pluginDir)
 
     // Get Response Status Code
     resStatusCode := requests.StatusCodeFromRaw(rawResp)
@@ -121,7 +117,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 	if found && resStatusCode != 429 {
         var webhook string
         webhook = getWebhook(scannerPlugin)
-		report.VulnerabilityOutput(scanName, severity, url, summary, webhook)
+		report.Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, pluginDir)
 	}
 }
 

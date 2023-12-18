@@ -2,10 +2,6 @@ package report
 
 import (
 	"fmt"
-	"net/http"
-	"bytes"
-	"encoding/json"
-	"crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
 	"net/url"
@@ -19,39 +15,50 @@ import (
 	"github.com/cfsdes/nucke/pkg/globals"
 )
 
-func VulnerabilityOutput(scanName string, severity string, url string, summary string, webhook string) {
-	yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
-	red := color.New(color.FgRed, color.Bold).SprintFunc()
-	green := color.New(color.FgGreen, color.Bold).SprintFunc()
-	blue := color.New(color.FgBlue, color.Bold).SprintFunc()
-	magenta := color.New(color.FgMagenta, color.Bold).SprintFunc()
-	cyan := color.New(color.FgCyan).SprintFunc()
+var issueReported = make(map[string]bool)
 
-	switch severity {
-	case "Critical":
-		fmt.Printf("[%s] [%s] %s \n", cyan(scanName), magenta(severity), url)
-	case "High":
-		fmt.Printf("[%s] [%s] %s \n", cyan(scanName), red(severity), url)
-	case "Medium":
-		fmt.Printf("[%s] [%s] %s \n", cyan(scanName), yellow(severity), url)
-	case "Low":
-		fmt.Printf("[%s] [%s] %s \n", cyan(scanName), green(severity), url)
-	case "Info":
-		fmt.Printf("[%s] [%s] %s \n", cyan(scanName), blue(severity), url)
-	}
+func Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, pluginDir string) {
+	// Check for duplicate
+	hash := createSha1Hash(scanName, url, param)
+	if (!issueReported[hash]) {
+		issueReported[hash] = true
 
-	// Create output
-	if globals.Output != "" {
-		outputPath := getOutputPath(url, scanName, summary)
+		yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
+		red := color.New(color.FgRed, color.Bold).SprintFunc()
+		green := color.New(color.FgGreen, color.Bold).SprintFunc()
+		blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+		magenta := color.New(color.FgMagenta, color.Bold).SprintFunc()
+		cyan := color.New(color.FgCyan).SprintFunc()
 
-		err := writeStringToFile(summary, outputPath)
-		if err != nil {
-			panic(err)
+		switch severity {
+		case "Critical":
+			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), magenta(severity), url)
+		case "High":
+			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), red(severity), url)
+		case "Medium":
+			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), yellow(severity), url)
+		case "Low":
+			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), green(severity), url)
+		case "Info":
+			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), blue(severity), url)
 		}
-	}
 
-	// Send webhook request
-	notifyWebhook(scanName, severity, url, summary, webhook)
+		// Create summary
+		summary := createSummary(pluginDir, scanName, severity, rawReq, rawResp, url, payload, param)
+
+		// Create output
+		if globals.Output != "" {
+			outputPath := getOutputPath(scanName, url, param)
+			
+			err := writeStringToFile(summary, outputPath)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		// Send webhook request
+		Notify(scanName, severity, url, summary, webhook)
+	}
 }
 
 // Format output
@@ -69,16 +76,6 @@ func FormatOutput(output string) string {
 	return outputPath
 }
 
-// Func to generate random string
-func generateRandomString(length int) string {
-	randomBytes := make([]byte, length)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		panic(err)
-	}
-	return hex.EncodeToString(randomBytes)
-}
-
 // return the domain of the url
 func getDomain(urlString string) string {
 	parsedURL, err := url.Parse(urlString)
@@ -88,18 +85,26 @@ func getDomain(urlString string) string {
 	return parsedURL.Hostname()
 }
 
-// Function to return the outputPath
-func getOutputPath(urlString string, scanName string, summary string) string {
-	// parse domain
-	domain := getDomain(urlString)
-
+// generate random SHA1 hash
+func createSha1Hash(scanName, url, param string) string {
 	// generate random SHA1 hash
-	signatureString := fmt.Sprintf("%s-%s-%s", len(summary), urlString, scanName)
+	signatureString := fmt.Sprintf("%s-%s-%s", scanName, url, param)
 	hash := sha1.Sum([]byte(signatureString))
 	hashString := hex.EncodeToString(hash[:])
 
+	return hashString
+}
+
+// Function to return the outputPath
+func getOutputPath(scanName, url, param string) string {
+	// parse domain
+	domain := getDomain(url)
+
+	// generate random SHA1 hash
+	hash := createSha1Hash(scanName, url, param)
+
 	// filename
-	fileName := scanName + "-" + hashString + ".md"
+	fileName := scanName + "-" + hash + ".md"
 
 	// set output path
 	outputPath := filepath.Join(globals.Output, domain, fileName)
@@ -108,12 +113,6 @@ func getOutputPath(urlString string, scanName string, summary string) string {
 
 // Function to write string to file
 func writeStringToFile(text string, filePath string) error {
-	// Check if file already exists
-	if _, err := os.Stat(filePath); err == nil {
-		// File already exists, return without writing to it
-		return nil
-	}
-
 	err := os.MkdirAll(filepath.Dir(filePath), 0755)
 	if err != nil {
 		return err
@@ -126,42 +125,59 @@ func writeStringToFile(text string, filePath string) error {
 	return nil
 }
 
+func createSummary(pluginDir, scanName, severity, rawReq, rawResp, url, payload, param string) string {
+    _, err := os.Stat(pluginDir + "/report-template.md")
 
-// Envia request JSON POST para o webhook sobre a vulnerabilidade identificada
-func notifyWebhook(scanName string, severity string, url string, summary string, webhook string) {
-	Red := color.New(color.FgBlue, color.Bold).SprintFunc()
-	Blue := color.New(color.FgBlue, color.Bold).SprintFunc()
+	var reportContent string
 
-	// Verificar se webhook não está vazio
-	if webhook != "" {
-        // Criar uma estrutura de dados para representar os parâmetros JSON
-		data := map[string]string{
-			"plugin":  scanName,
-			"severity":  severity,
-			"url":       url,
-			"report":   summary,
-		}
+    // Se o report-template.md existir na pasta do plugin
+    if err == nil {
+        reportContent = ReadFileToString("report-template.md", pluginDir)
+    } else {
+		reportContent = `
+## Issue Details
+					
+- **Scan Name**: {{.scanName}}
+- **Severity**: {{.severity}}
+- **Vulnerable Endpoint**: {{.url}}
+- **Injection Point**: {{.param}}
 
-        // Converter a estrutura de dados para JSON
-		jsonData, err := json.Marshal(data)
-		if err != nil && globals.Debug {
-			fmt.Printf("[%s] Output: Error converting JSON\n", Red("ERR"))
-			return
-		}
+## Proof of Concept
 
-        // Enviar a requisição POST JSON para o webhook
-		resp, err := http.Post(webhook, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil && globals.Debug {
-			fmt.Printf("[%s] Output: Error sending webhook request\n", Red("ERR"))
-			return
-		}
-		defer resp.Body.Close()
+The payload below was used on **{{.param}}** to trigger the vulnerability:
+` + "```" + `
+{{.payload}}
+` + "```" + `
 
-        // Verificar a resposta do servidor
-		if resp.StatusCode == http.StatusOK {
-			fmt.Printf("[%s] Webhook: Successful Request\n", Blue("DEBUG"))
-		} else {
-			fmt.Printf("[%s] Webhook: Error Sending Request\n", Red("ERR"))
-		}
+### HTTP Request
+Request:
+` + "```http" + `
+{{.request}}
+` +  "```" + `
+					
+Response:
+` + "```http" + `
+{{.response}}
+` + "```"
+    }
+
+	summary := ParseTemplate(reportContent, map[string]interface{}{
+		"request": rawReq,
+		"response": rawResp,
+		"url": url,
+		"payload": payload,
+		"param": param,
+		"scanName": scanName,
+		"severity": severity,
+	})
+
+	return summary
+}
+
+func isDuplicate(scanName, url, param string) {
+	hash := createSha1Hash(scanName, url, param)
+	if (!issueReported[hash]) {
+
 	}
+	issueReported[hash] = true
 }

@@ -18,10 +18,10 @@ func FuzzAll(r *http.Request, client *http.Client, payloads []string, matcher de
 	}
 	
 	for _, fuzzer := range allfuzz {
-		match, rawReq, url, payload, param, rawResp, logsScan := fuzzer(r, client, payloads, matcher)
+		found, url, payload, param, rawReq, rawResp, logsScan := fuzzer(r, client, payloads, matcher)
 		logScansCombined = append(logScansCombined, logsScan...)
-		if match {
-			return match, rawReq, url, payload, param, rawResp, logScansCombined
+		if found {
+			return found, url, payload, param, rawReq, rawResp, logScansCombined
 		}
 	}
 

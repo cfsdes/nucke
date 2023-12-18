@@ -104,10 +104,10 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 	    res := <-resultChan
         log := detections.Result{
             Found: res.Found,
-            RawReq: res.RawReq,
             URL: res.URL,
             Payload: res.Payload,
             Param: res.Param,
+            RawReq: res.RawReq,
             RawResp: res.RawResp,
             ResBody: res.ResBody,
         }
@@ -116,7 +116,7 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 
     for _, res := range logScans {
 		if res.Found {
-			return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, logScans
+			return true, res.URL, res.Payload, res.Param, res.RawReq, res.RawResp, logScans
 		}
 	}
 

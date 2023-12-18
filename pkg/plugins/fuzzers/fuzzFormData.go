@@ -96,10 +96,10 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
         res := <-resultChan
         log := detections.Result{
             Found: res.Found,
-            RawReq: res.RawReq,
             URL: res.URL,
             Payload: res.Payload,
             Param: res.Param,
+            RawReq: res.RawReq,
             RawResp: res.RawResp,
             ResBody: res.ResBody,
         }
@@ -108,7 +108,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
 
     for _, res := range logScans {
 		if res.Found {
-			return true, res.RawReq, res.URL, res.Payload, res.Param, res.RawResp, logScans
+			return true, res.URL, res.Payload, res.Param, res.RawReq, res.RawResp, logScans
 		}
 	}
 
