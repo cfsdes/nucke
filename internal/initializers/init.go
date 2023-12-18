@@ -14,6 +14,10 @@ func Start(version string){
 	// Initial banner
 	Banner()
 
+	// Check binaries
+	binaries := []string{"interactsh-client"}
+	CheckBinaries(binaries)
+
 	// Print Nucke version
     if globals.Version {
 		fmt.Println("\nNucke version: ",version, "\n")
@@ -37,8 +41,4 @@ func Start(version string){
 			fmt.Println("Error creating output path:",err)
 		}
 	}
-
-	// Check binaries
-    binaries := []string{"interactsh-client"}
-    CheckBinaries(binaries)
 }
