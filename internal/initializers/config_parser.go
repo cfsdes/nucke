@@ -8,7 +8,6 @@ import (
 	"strings"
 	"os/user"
 	"os"
-	"os/exec"
 
 	"gopkg.in/yaml.v2"
 	"github.com/fatih/color"
