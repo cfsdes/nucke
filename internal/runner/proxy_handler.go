@@ -44,7 +44,8 @@ func StartProxy() {
 
     // Start messages
     Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-    fmt.Printf("[%s] Listening on port %s...\n", Cyan("INF"), globals.Port)
+    Green := color.New(color.FgGreen, color.Bold).SprintFunc()
+    fmt.Printf("[%s] Nucke running on port %s!\n", Green("OK"), globals.Port)
 
     if globals.Jaeles {
         fmt.Printf("[%s] Interacting with jaeles: %s\n", Cyan("INF"), globals.JaelesApi)
