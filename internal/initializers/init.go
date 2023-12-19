@@ -33,8 +33,8 @@ func Start(version string){
 		globals.Scope, globals.PluginPaths = ParseConfig(globals.PluginsConfig)
 
 		// Start redis & interactsh
-		utils.RunRedis()
 		utils.RunInteractsh()
+		utils.RunRedis()
 	}
 
 	// Create Output Path
