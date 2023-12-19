@@ -14,7 +14,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzFormData(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzFormData(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
     
     // Result channel
@@ -86,7 +86,7 @@ func FuzzFormData(r *http.Request, client *http.Client, payloads []string, match
 
             // Check if match vulnerability
             for _, resp := range responses {
-                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+                go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
             }
         }
     }

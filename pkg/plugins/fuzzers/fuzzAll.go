@@ -6,11 +6,11 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/detections"
 )
 
-func FuzzAll(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzAll(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
 
 	var logScansCombined []detections.Result
 
-	allfuzz := []func(*http.Request, *http.Client, []string, detections.Matcher) (bool, string, string, string, string, string, []detections.Result){
+	allfuzz := []func(*http.Request, *http.Client, string, []string, detections.Matcher) (bool, string, string, string, string, string, []detections.Result){
 		FuzzJSON,
 		FuzzQuery,
 		FuzzFormData,
@@ -18,7 +18,7 @@ func FuzzAll(r *http.Request, client *http.Client, payloads []string, matcher de
 	}
 	
 	for _, fuzzer := range allfuzz {
-		found, url, payload, param, rawReq, rawResp, logsScan := fuzzer(r, client, payloads, matcher)
+		found, url, payload, param, rawReq, rawResp, logsScan := fuzzer(r, client, pluginDir, payloads, matcher)
 		logScansCombined = append(logScansCombined, logsScan...)
 		if found {
 			return found, url, payload, param, rawReq, rawResp, logScansCombined

@@ -16,7 +16,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzQuery(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
     
     // Extract parameters from URL
@@ -83,7 +83,7 @@ func FuzzQuery(r *http.Request, client *http.Client, payloads []string, matcher 
             
             // Check if match vulnerability
             for _, resp := range responses {
-                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+                go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
             }
         }
     }

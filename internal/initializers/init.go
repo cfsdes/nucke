@@ -15,7 +15,10 @@ func Start(version string){
 	Banner()
 
 	// Check binaries
-	binaries := []string{"interactsh-client"}
+	binaries := []string{
+		"interactsh-client",
+		"redis-server",
+	}
 	CheckBinaries(binaries)
 
 	// Print Nucke version
@@ -29,8 +32,9 @@ func Start(version string){
 		// Parse Config.yaml and Build Plugins
 		globals.Scope, globals.PluginPaths = ParseConfig(globals.PluginsConfig)
 
-		// Start interact.sh
-		utils.StartInteractsh()
+		// Start redis & interactsh
+		utils.RunRedis()
+		utils.RunInteractsh()
 	}
 
 	// Create Output Path

@@ -9,7 +9,7 @@ import (
 
 
 // Matcher Check main function
-func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string, resultChan chan Result) {
+func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string, resultChan chan Result) {
 	// Get URL from raw request
 	url := requests.ExtractRawURL(rawReq)
 	
@@ -38,6 +38,9 @@ func MatchCheck(m Matcher, resp *http.Response, resTime int, oobID string, rawRe
 		foundArray = append(foundArray, found)
 	}
 	if m.OOB {
+		oob_id := utils.ExtractOobID(payload)
+		utils.StoreDetection(pluginDir, oob_id, url, payload, parameter, rawReq)
+		
 		found := utils.CheckOobInteraction(oobID)
 		foundArray = append(foundArray, found)
 	}

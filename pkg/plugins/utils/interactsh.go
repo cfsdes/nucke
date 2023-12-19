@@ -18,7 +18,7 @@ var interactOutput string = "/tmp/nucke-interact"
 var interactSession string = "/tmp/nucke-interact-session"
 var cmd *exec.Cmd
 
-func StartInteractsh() {
+func RunInteractsh() {
     // Removing old session files
     deleteFileIfExists(interactSession)
 

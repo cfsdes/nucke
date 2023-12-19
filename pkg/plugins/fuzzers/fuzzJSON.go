@@ -18,7 +18,7 @@ import (
 )
 
 
-func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzJSON(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -57,7 +57,7 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
         for _, payload := range payloads {
                        
             // Check if value is map. If yes, recursively check it to inject payload
-            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher)
+            addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher, pluginDir)
         }
     }
 
@@ -86,11 +86,11 @@ func FuzzJSON(r *http.Request, client *http.Client, payloads []string, matcher d
 }
 
 // function to add payload to JSON
-func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher) {
+func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
     if innerMap, ok := value.(map[string]interface{}); ok {
         // Se for um mapa, iterar sobre suas chaves e valores
         for innerKey, innerValue := range innerMap {
-            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher)
+            addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher, pluginDir)
         }
     } else if innerArray, ok := value.([]interface{}); ok {
         // Se for um array, não faz nada
@@ -103,17 +103,17 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
             fmt.Printf("[%s] Error FuzzJSON: %v\n", Red("ERR"), err)
         }
         
-        loopScan(jsonData, key, string(updatedArrayStr), resultChan, req, client, matcher)
+        loopScan(jsonData, key, string(updatedArrayStr), resultChan, req, client, matcher, pluginDir)
 
     } else {
         // Update payloads {{.params}}
         payload = parsers.ParsePayload(payload)
-        loopScan(jsonData, key, payload, resultChan, req, client, matcher)
+        loopScan(jsonData, key, payload, resultChan, req, client, matcher, pluginDir)
     }
 }
 
 // Scan to send request and check match
-func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher) {
+func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
     
     // Delay between requests
     time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
@@ -152,7 +152,7 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
 
     // Check if match vulnerability
     for _, resp := range responses {
-        go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+        go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
     }
 }
 

@@ -15,7 +15,7 @@ import (
 	"github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher, location string) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzPath(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher, location string) (bool, string, string, string, string, string, []detections.Result) {
 	req := requests.CloneReq(r)
 
 	// Extract segments from URL path
@@ -94,7 +94,7 @@ func FuzzPath(r *http.Request, client *http.Client, payloads []string, matcher d
 
 			// Check if match vulnerability
 			for _, resp := range responses {
-				go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", index), resultChan)
+				go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", index), resultChan)
 			}
 		}
 	}

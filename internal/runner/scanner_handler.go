@@ -116,24 +116,7 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 	// Parse output if vulnerability is found
 	if found && resStatusCode != 429 {
         var webhook string
-        webhook = getWebhook(scannerPlugin)
+        webhook = report.GetWebhook(scannerPlugin)
 		report.Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, pluginDir)
 	}
-}
-
-
-// Identifica o webhook para o plugin sendo escaneado e retorna ele
-func getWebhook(pluginPath string) string {   
-    // Loop externo para percorrer todas as chaves do mapa
-	for key, files := range globals.Webhook {
-		// Loop interno para percorrer os valores associados à chave
-		for _, file := range files {
-			// Verificar se o valor desejado está presente
-			if file == pluginPath {
-				return key
-			}
-		}
-	}
-
-    return ""
 }

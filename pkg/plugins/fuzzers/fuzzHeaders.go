@@ -15,7 +15,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, headers []string, matcher detections.Matcher, behavior string) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzHeaders(r *http.Request, client *http.Client, pluginDir string, payloads []string, headers []string, matcher detections.Matcher, behavior string) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -76,7 +76,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
 
             // Check if match vulnerability
             for _, resp := range responses {
-                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, strings.Join(headers, ","), resultChan)
+                go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, strings.Join(headers, ","), resultChan)
             }
         }
     } else {
@@ -118,7 +118,7 @@ func FuzzHeaders(r *http.Request, client *http.Client, payloads []string, header
 
                 // Check if match vulnerability
                 for _, resp := range responses {
-                    go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, header, resultChan)
+                    go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, header, resultChan)
                 }
             }
         }

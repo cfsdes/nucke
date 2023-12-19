@@ -16,7 +16,7 @@ import (
     "github.com/cfsdes/nucke/pkg/plugins/utils"
 )
 
-func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
+func FuzzXML(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
     req := requests.CloneReq(r)
 
     // Result channel
@@ -81,7 +81,7 @@ func FuzzXML(r *http.Request, client *http.Client, payloads []string, matcher de
 
             // Check if match vulnerability
             for _, resp := range responses {
-                go detections.MatchCheck(matcher, resp, elapsed, oobID, rawReq, payload, match[0], resultChan)
+                go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, match[0], resultChan)
             }
         }
     }

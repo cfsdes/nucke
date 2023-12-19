@@ -48,3 +48,19 @@ func Notify(scanName string, severity string, url string, summary string, webhoo
 		}
 	}
 }
+
+// Identifica o webhook para o plugin sendo escaneado e retorna ele
+func GetWebhook(pluginPath string) string {   
+    // Loop externo para percorrer todas as chaves do mapa
+	for key, files := range globals.Webhook {
+		// Loop interno para percorrer os valores associados à chave
+		for _, file := range files {
+			// Verificar se o valor desejado está presente
+			if file == pluginPath {
+				return key
+			}
+		}
+	}
+
+    return ""
+}

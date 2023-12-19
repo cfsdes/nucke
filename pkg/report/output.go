@@ -41,6 +41,8 @@ func Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, p
 			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), green(severity), url)
 		case "Info":
 			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), blue(severity), url)
+		case "OOB":
+			fmt.Printf("[%s] [%s] %s \n", cyan(scanName), magenta(severity), url)
 		}
 
 		// Create summary
