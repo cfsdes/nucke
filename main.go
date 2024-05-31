@@ -1,15 +1,14 @@
 package main
 
 import (
-
-    "github.com/cfsdes/nucke/internal/runner"
-    "github.com/cfsdes/nucke/internal/initializers"
+	"github.com/cfsdes/nucke/internal/initializers"
+	"github.com/cfsdes/nucke/internal/runner"
 )
 
-var version = "v0.1.7"
+var version = "v0.1.8"
 
 func main() {
-    initializers.Start(version)
+	initializers.Start(version)
 
 	// Start Proxy
 	runner.StartProxy()
