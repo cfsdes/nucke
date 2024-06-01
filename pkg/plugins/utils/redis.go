@@ -1,54 +1,49 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
-	"bufio"
-	"strings"
-	"regexp"
 	"os/exec"
-	"time"
 	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 
-	"github.com/redis/go-redis/v9"
-	"github.com/fsnotify/fsnotify"
-    "github.com/fatih/color"
 	"github.com/cfsdes/nucke/pkg/report"
+	"github.com/fatih/color"
+	"github.com/fsnotify/fsnotify"
+	"github.com/redis/go-redis/v9"
 )
 
 func RunRedis() {
 	Red := color.New(color.FgRed, color.Bold).SprintFunc()
 	Cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
-    fmt.Printf("[%s] Starting Redis...\n", Cyan("INF"))
-	
+	fmt.Printf("[%s] Starting Redis...\n", Cyan("INF"))
+
 	// Inicia o Redis
 	cmd := exec.Command("redis-server")
 	err := cmd.Start()
 	if err != nil {
-    	fmt.Printf("[%s] Error while initializing redis: %v\n", Red("ERR"), err)
+		fmt.Printf("[%s] Error while initializing redis: %v\n", Red("ERR"), err)
 		return
 	}
 
 	time.Sleep(2 * time.Second)
 
 	client := redis.NewClient(&redis.Options{
-        Addr:	  "localhost:6379",
-        Password: "", // no password set
-        DB:		  0,  // use default DB
-    })
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	// Checar por interações passadas do interactsh
+	checkOobInteraction(client)
 
 	// Monitora alterações no arquivo /tmp/nucke-interact
 	go watchFile("/tmp/nucke-interact", func() {
-		// Obter as chaves do Redis com 8 dígitos
-		chaves, err := get8digitsKey(client)
-		if err != nil {
-			fmt.Printf("[%s] Error getting redis key: %v\n", Red("ERR"), err)
-			return
-		}
-
-		// Verificar se as chaves do Redis existem na sessao do interactsh
-		verifyKeys(chaves)
+		checkOobInteraction(client)
 	})
 }
 
@@ -57,19 +52,19 @@ func StoreDetection(pluginDir, oob_id, url, payload, param, rawReq string) {
 	scanName := filepath.Base(pluginDir)
 
 	client := redis.NewClient(&redis.Options{
-        Addr:	  "localhost:6379",
-        Password: "", // no password set
-        DB:		  0,  // use default DB
-    })
-	
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
 	ctx := context.Background()
 
 	session := map[string]string{
-		"scanName": scanName,
-		"url": url,
-		"payload": payload,
-		"param": param,
-		"rawReq": rawReq,
+		"scanName":  scanName,
+		"url":       url,
+		"payload":   payload,
+		"param":     param,
+		"rawReq":    rawReq,
 		"pluginDir": pluginDir,
 	}
 
@@ -175,7 +170,6 @@ func verifyKeys(chaves []string) (bool, string) {
 		for _, chave := range chaves {
 			if strings.Contains(linha, chave) {
 				reportFinding(chave)
-				//return true, chave
 			}
 		}
 	}
@@ -188,14 +182,14 @@ func verifyKeys(chaves []string) (bool, string) {
 	return false, ""
 }
 
-func reportFinding(key string){
+func reportFinding(key string) {
 	// Redis Client
 	ctx := context.Background()
 	client := redis.NewClient(&redis.Options{
-        Addr:	  "localhost:6379",
-        Password: "", // no password set
-        DB:		  0,  // use default DB
-    })
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
 
 	// Report finding
 	vuln := client.HGetAll(ctx, key).Val()
@@ -204,4 +198,19 @@ func reportFinding(key string){
 
 	// Clear key in redis
 	client.Del(ctx, key)
+}
+
+// Checar se o interactsh teve interação
+func checkOobInteraction(client *redis.Client) {
+	Red := color.New(color.FgRed, color.Bold).SprintFunc()
+
+	// Obter as chaves do Redis com 8 dígitos
+	chaves, err := get8digitsKey(client)
+	if err != nil {
+		fmt.Printf("[%s] Error getting redis key: %v\n", Red("ERR"), err)
+		return
+	}
+
+	// Verificar se as chaves do Redis existem na sessao do interactsh
+	verifyKeys(chaves)
 }

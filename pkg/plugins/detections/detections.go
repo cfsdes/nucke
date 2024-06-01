@@ -3,16 +3,15 @@ package detections
 import (
 	"net/http"
 
-	"github.com/cfsdes/nucke/pkg/requests"
 	"github.com/cfsdes/nucke/pkg/plugins/utils"
+	"github.com/cfsdes/nucke/pkg/requests"
 )
-
 
 // Matcher Check main function
 func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string, resultChan chan Result) {
 	// Get URL from raw request
 	url := requests.ExtractRawURL(rawReq)
-	
+
 	foundArray := make([]bool, 0)
 	statusCode, resBody, resHeaders, rawResp := requests.ParseResponse(resp)
 
@@ -34,19 +33,16 @@ func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, o
 		foundArray = append(foundArray, found)
 	}
 	if m.StatusCode != nil {
-		found := MatchMathOperation(m.StatusCode.Code,m.StatusCode.Operator, statusCode)
+		found := MatchMathOperation(m.StatusCode.Code, m.StatusCode.Operator, statusCode)
 		foundArray = append(foundArray, found)
 	}
 	if m.OOB {
 		oob_id := utils.ExtractOobID(payload)
 		utils.StoreDetection(pluginDir, oob_id, url, payload, parameter, rawReq)
-		
-		found := utils.CheckOobInteraction(oobID)
-		foundArray = append(foundArray, found)
 	}
 
 	// Validate if all matches are true
-    if len(foundArray) > 0 {
+	if len(foundArray) > 0 {
 		// AND condition
 		if m.Operator == "" || m.Operator == "AND" {
 			allTrue := true
@@ -58,7 +54,7 @@ func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, o
 			}
 			resultChan <- Result{allTrue, url, payload, parameter, rawReq, rawResp, resBody}
 
-		// OR condition
+			// OR condition
 		} else if m.Operator == "OR" {
 			for _, value := range foundArray {
 				if value {
@@ -71,5 +67,3 @@ func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, o
 		resultChan <- Result{false, url, payload, parameter, rawReq, rawResp, resBody}
 	}
 }
-
-
