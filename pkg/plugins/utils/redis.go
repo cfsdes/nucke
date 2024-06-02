@@ -41,6 +41,10 @@ func RunRedis() {
 	// Checar por interações passadas do interactsh
 	checkOobInteraction(client)
 
+	// Limpar registros antigos
+	ctx := context.Background()
+	client.FlushAll(ctx)
+
 	// Monitora alterações no arquivo /tmp/nucke-interact
 	go watchFile("/tmp/nucke-interact", func() {
 		checkOobInteraction(client)
