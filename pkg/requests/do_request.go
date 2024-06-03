@@ -1,29 +1,33 @@
 package requests
 
 import (
+	"fmt"
 	"net/http"
-    "fmt"
+	"sync/atomic"
 
-    "github.com/cfsdes/nucke/pkg/globals"
+	"github.com/cfsdes/nucke/pkg/globals"
 )
 
 /**
 * Make a request based on the http.Request object received.
 * Return all responses in a slice format. One response for each redirect + the final response
-*/
+ */
 
-func Do(r *http.Request, client *http.Client) ([]*http.Response) {
+func Do(r *http.Request, client *http.Client) []*http.Response {
 	// Clone Req
 	req := CloneReq(r)
 
 	responses := []*http.Response{}
 	redirectLimit := 10 // Define o limite de redirecionamentos
 
+	// Add request na variável requestSent
+	atomic.AddInt64(&globals.RequestsMade, 1)
+
 	for {
 		response, err := client.Do(req)
 		if err != nil {
 			if globals.Debug {
-				fmt.Println("do_request:",err)
+				fmt.Println("do_request:", err)
 			}
 			return responses
 		}
