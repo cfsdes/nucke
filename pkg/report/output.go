@@ -1,26 +1,31 @@
 package report
 
 import (
-	"fmt"
 	"crypto/sha1"
 	"encoding/hex"
-	"net/url"
+	"fmt"
 	"io/ioutil"
+	"net/url"
+	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
-	"os/user"
-	"os"
 
-	"github.com/fatih/color"
 	"github.com/cfsdes/nucke/pkg/globals"
+	"github.com/fatih/color"
 )
 
 var issueReported = make(map[string]bool)
 
 func Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, pluginDir string) {
+	// Ignore if empty
+	if scanName == "" && url == "" {
+		return
+	}
+
 	// Check for duplicate
 	hash := createSha1Hash(scanName, url, param)
-	if (!issueReported[hash]) {
+	if !issueReported[hash] {
 		issueReported[hash] = true
 
 		yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
@@ -51,7 +56,7 @@ func Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, p
 		// Create output
 		if globals.Output != "" {
 			outputPath := getOutputPath(scanName, url, param)
-			
+
 			err := writeStringToFile(summary, outputPath)
 			if err != nil {
 				panic(err)
@@ -66,15 +71,15 @@ func Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, p
 // Format output
 func FormatOutput(output string) string {
 	// Get the current user's home directory
-    usr, err := user.Current()
-    if err != nil {
-        fmt.Println("Error getting current user:", err)
-        os.Exit(1)
-    }
+	usr, err := user.Current()
+	if err != nil {
+		fmt.Println("Error getting current user:", err)
+		os.Exit(1)
+	}
 
-    // Replace "~" with the home directory in the plugin path
-    outputPath := strings.Replace(output, "~", usr.HomeDir, 1) // path/to/plugin/plugin.so
-	
+	// Replace "~" with the home directory in the plugin path
+	outputPath := strings.Replace(output, "~", usr.HomeDir, 1) // path/to/plugin/plugin.so
+
 	return outputPath
 }
 
@@ -119,7 +124,7 @@ func writeStringToFile(text string, filePath string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	err = ioutil.WriteFile(filePath, []byte(text), 0644)
 	if err != nil {
 		return err
@@ -128,14 +133,14 @@ func writeStringToFile(text string, filePath string) error {
 }
 
 func createSummary(pluginDir, scanName, severity, rawReq, rawResp, url, payload, param string) string {
-    _, err := os.Stat(pluginDir + "/report-template.md")
+	_, err := os.Stat(pluginDir + "/report-template.md")
 
 	var reportContent string
 
-    // Se o report-template.md existir na pasta do plugin
-    if err == nil {
-        reportContent = ReadFileToString("report-template.md", pluginDir)
-    } else {
+	// Se o report-template.md existir na pasta do plugin
+	if err == nil {
+		reportContent = ReadFileToString("report-template.md", pluginDir)
+	} else {
 		reportContent = `
 ## Issue Details
 					
@@ -155,20 +160,20 @@ The payload below was used on **{{.param}}** to trigger the vulnerability:
 Request:
 ` + "```http" + `
 {{.request}}
-` +  "```" + `
+` + "```" + `
 					
 Response:
 ` + "```http" + `
 {{.response}}
 ` + "```"
-    }
+	}
 
 	summary := ParseTemplate(reportContent, map[string]interface{}{
-		"request": rawReq,
+		"request":  rawReq,
 		"response": rawResp,
-		"url": url,
-		"payload": payload,
-		"param": param,
+		"url":      url,
+		"payload":  payload,
+		"param":    param,
 		"scanName": scanName,
 		"severity": severity,
 	})
@@ -178,7 +183,7 @@ Response:
 
 func isDuplicate(scanName, url, param string) {
 	hash := createSha1Hash(scanName, url, param)
-	if (!issueReported[hash]) {
+	if !issueReported[hash] {
 
 	}
 	issueReported[hash] = true
