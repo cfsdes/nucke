@@ -1,18 +1,18 @@
 package fuzzers
 
 import (
-	"net/http"
-	"io/ioutil"
 	"bytes"
-	"time"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 
-	"github.com/cfsdes/nucke/pkg/plugins/detections"
-	"github.com/cfsdes/nucke/pkg/requests"
-	"github.com/cfsdes/nucke/pkg/globals"
 	"github.com/cfsdes/nucke/internal/parsers"
+	"github.com/cfsdes/nucke/pkg/globals"
+	"github.com/cfsdes/nucke/pkg/plugins/detections"
 	"github.com/cfsdes/nucke/pkg/plugins/utils"
+	"github.com/cfsdes/nucke/pkg/requests"
 )
 
 func FuzzPath(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher, location string) (bool, string, string, string, string, string, []detections.Result) {
@@ -24,8 +24,11 @@ func FuzzPath(r *http.Request, client *http.Client, pluginDir string, payloads [
 	// Result channel
 	resultChan := make(chan detections.Result)
 
+	// Counter of channels opened
+	var channelsOpened int
+
 	// Array com os resultados de cada teste executado falho
-    var logScans []detections.Result
+	var logScans []detections.Result
 
 	// Get request body, if method is POST
 	var body []byte
@@ -58,8 +61,8 @@ func FuzzPath(r *http.Request, client *http.Client, pluginDir string, payloads [
 		// Create a new payload with the original segment replaced
 		for _, payload := range payloads {
 			// Delay between requests
-            time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
-			
+			time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
+
 			// Replace "{{.original}}" with the current segment in the payload
 			payload = strings.Replace(payload, "{{.original}}", segment, -1)
 
@@ -94,27 +97,28 @@ func FuzzPath(r *http.Request, client *http.Client, pluginDir string, payloads [
 
 			// Check if match vulnerability
 			for _, resp := range responses {
+				channelsOpened++
 				go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, fmt.Sprintf("segment %d", index), resultChan)
 			}
 		}
 	}
 
 	// Wait for any goroutine to send a result to the channel
-	for i := 0; i < len(injectIndexes)*len(payloads); i++ {
-	    res := <-resultChan
-        log := detections.Result{
-            Found: res.Found,
-            URL: res.URL,
-            Payload: res.Payload,
-            Param: res.Param,
-            RawReq: res.RawReq,
-            RawResp: res.RawResp,
-            ResBody: res.ResBody,
-        }
-        logScans = append(logScans, log)
-    }
+	for i := 0; i < channelsOpened; i++ {
+		res := <-resultChan
+		log := detections.Result{
+			Found:   res.Found,
+			URL:     res.URL,
+			Payload: res.Payload,
+			Param:   res.Param,
+			RawReq:  res.RawReq,
+			RawResp: res.RawResp,
+			ResBody: res.ResBody,
+		}
+		logScans = append(logScans, log)
+	}
 
-    for _, res := range logScans {
+	for _, res := range logScans {
 		if res.Found {
 			return true, res.URL, res.Payload, res.Param, res.RawReq, res.RawResp, logScans
 		}

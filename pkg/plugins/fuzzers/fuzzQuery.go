@@ -1,113 +1,117 @@
 package fuzzers
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
 	"net/http"
-    "net/url"
-    "io/ioutil"
-    "bytes"
-    "time"
-    "fmt"
-    "strings"
+	"net/url"
+	"strings"
+	"time"
 
-    "github.com/cfsdes/nucke/pkg/plugins/detections"
-    "github.com/cfsdes/nucke/pkg/requests"
-    "github.com/cfsdes/nucke/pkg/globals"
-    "github.com/cfsdes/nucke/internal/parsers"
-    "github.com/cfsdes/nucke/pkg/plugins/utils"
+	"github.com/cfsdes/nucke/internal/parsers"
+	"github.com/cfsdes/nucke/pkg/globals"
+	"github.com/cfsdes/nucke/pkg/plugins/detections"
+	"github.com/cfsdes/nucke/pkg/plugins/utils"
+	"github.com/cfsdes/nucke/pkg/requests"
 )
 
 func FuzzQuery(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
-    req := requests.CloneReq(r)
-    
-    // Extract parameters from URL
-    params := req.URL.Query()
+	req := requests.CloneReq(r)
 
-    // Result channel
-    resultChan := make(chan detections.Result)
+	// Extract parameters from URL
+	params := req.URL.Query()
 
-    // Array com os resultados de cada teste executado falho
-    var logScans []detections.Result
+	// Result channel
+	resultChan := make(chan detections.Result)
 
-    // Get request body, if method is POST
-    var body []byte
-    var err error
-    body, err = ioutil.ReadAll(req.Body)
-    if err != nil {
-        // handle error
-        if globals.Debug {
-            fmt.Println("fuzzQuery:",err)
-        }
-        return false, "", "", "", "", "", nil
-    }
+	// Counter of channels opened
+	var channelsOpened int
 
-    // For each parameter, send a new request with the parameter replaced by a payload
-    for key, _ := range params {
-        // Create a new query string with the parameter replaced by a payload
-        for _, payload := range payloads {
+	// Array com os resultados de cada teste executado falho
+	var logScans []detections.Result
 
-            // Delay between requests
-            time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
+	// Get request body, if method is POST
+	var body []byte
+	var err error
+	body, err = ioutil.ReadAll(req.Body)
+	if err != nil {
+		// handle error
+		if globals.Debug {
+			fmt.Println("fuzzQuery:", err)
+		}
+		return false, "", "", "", "", "", nil
+	}
 
-            // Update payloads {{.params}}
-            payload = parsers.ParsePayload(payload)
+	// For each parameter, send a new request with the parameter replaced by a payload
+	for key, _ := range params {
+		// Create a new query string with the parameter replaced by a payload
+		for _, payload := range payloads {
 
-            newParams := make(url.Values)
-            for k, v := range params {
-                if k == key {
-                    payload  = strings.Replace(payload, "{{.original}}", v[0], -1)
-                    newParams.Set(k, payload)
-                } else {
-                    newParams.Set(k, v[0])
-                }
-            }
+			// Delay between requests
+			time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
 
-            // Copy Request
-            reqCopy := requests.CloneReq(req)
-            reqCopy.URL.RawQuery = newParams.Encode()
+			// Update payloads {{.params}}
+			payload = parsers.ParsePayload(payload)
 
-            // Add request body
-            reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
+			newParams := make(url.Values)
+			for k, v := range params {
+				if k == key {
+					payload = strings.Replace(payload, "{{.original}}", v[0], -1)
+					newParams.Set(k, payload)
+				} else {
+					newParams.Set(k, v[0])
+				}
+			}
 
-            // Get raw request
-            rawReq := requests.RequestToRaw(reqCopy)
+			// Copy Request
+			reqCopy := requests.CloneReq(req)
+			reqCopy.URL.RawQuery = newParams.Encode()
 
-            // Send request
-            start := time.Now()
-            responses := requests.Do(reqCopy, client)
+			// Add request body
+			reqCopy.Body = ioutil.NopCloser(bytes.NewReader(body))
 
-            // Get response time
-            elapsed := int(time.Since(start).Seconds())
+			// Get raw request
+			rawReq := requests.RequestToRaw(reqCopy)
 
-            // Extract OOB ID
-            oobID := utils.ExtractOobID(payload)
-            
-            // Check if match vulnerability
-            for _, resp := range responses {
-                go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
-            }
-        }
-    }
+			// Send request
+			start := time.Now()
+			responses := requests.Do(reqCopy, client)
 
-    // Wait for any goroutine to send a result to the channel
-    for i := 0; i < len(params)*len(payloads); i++ {
-        res := <-resultChan
-        log := detections.Result{
-            Found: res.Found,
-            URL: res.URL,
-            Payload: res.Payload,
-            Param: res.Param,
-            RawReq: res.RawReq,
-            RawResp: res.RawResp,
-            ResBody: res.ResBody,
-        }
-        logScans = append(logScans, log)
-    }
+			// Get response time
+			elapsed := int(time.Since(start).Seconds())
 
-    for _, res := range logScans {
+			// Extract OOB ID
+			oobID := utils.ExtractOobID(payload)
+
+			// Check if match vulnerability
+			for _, resp := range responses {
+				channelsOpened++
+				go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+			}
+		}
+	}
+
+	// Wait for any goroutine to send a result to the channel
+	for i := 0; i < channelsOpened; i++ {
+		res := <-resultChan
+		log := detections.Result{
+			Found:   res.Found,
+			URL:     res.URL,
+			Payload: res.Payload,
+			Param:   res.Param,
+			RawReq:  res.RawReq,
+			RawResp: res.RawResp,
+			ResBody: res.ResBody,
+		}
+		logScans = append(logScans, log)
+	}
+
+	for _, res := range logScans {
 		if res.Found {
 			return true, res.URL, res.Payload, res.Param, res.RawReq, res.RawResp, logScans
 		}
 	}
 
-    return false, "", "", "", "", "", logScans
+	return false, "", "", "", "", "", logScans
 }

@@ -29,7 +29,7 @@ func Do(r *http.Request, client *http.Client) []*http.Response {
 			if globals.Debug {
 				fmt.Println("do_request:", err)
 			}
-			return responses
+			break
 		}
 
 		responses = append(responses, response)
