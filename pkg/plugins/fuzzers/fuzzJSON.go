@@ -30,7 +30,7 @@ func FuzzJSON(r *http.Request, client *http.Client, pluginDir string, payloads [
 	var logScans []detections.Result
 
 	// check if request is JSON
-	if !(req.Method == http.MethodPost && req.Header.Get("Content-Type") == "application/json") {
+	if !(req.Method == http.MethodPost && strings.Contains(req.Header.Get("Content-Type"), "application/json")) {
 		return false, "", "", "", "", "", nil
 	}
 

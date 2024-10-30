@@ -27,7 +27,7 @@ func FuzzFormData(r *http.Request, client *http.Client, pluginDir string, payloa
 	var channelsOpened int
 
 	// Check if method is POST and content type is application/x-www-form-urlencoded
-	if req.Method != http.MethodPost || req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
+	if !(req.Method == http.MethodPost && strings.Contains(req.Header.Get("Content-Type"), "application/x-www-form-urlencoded")) {
 		return false, "", "", "", "", "", nil
 	}
 
