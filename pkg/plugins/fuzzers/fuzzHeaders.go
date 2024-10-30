@@ -18,12 +18,6 @@ import (
 func FuzzHeaders(r *http.Request, client *http.Client, pluginDir string, payloads []string, headers []string, matcher detections.Matcher, behavior string) (bool, string, string, string, string, string, []detections.Result) {
 	req := requests.CloneReq(r)
 
-	// Result channel
-	resultChan := make(chan detections.Result)
-
-	// Counter of channels opened
-	var channelsOpened int
-
 	// Array com os resultados de cada teste executado falho
 	var logScans []detections.Result
 
@@ -76,8 +70,8 @@ func FuzzHeaders(r *http.Request, client *http.Client, pluginDir string, payload
 
 			// Check if match vulnerability
 			for _, resp := range responses {
-				channelsOpened++
-				go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, strings.Join(headers, ","), resultChan)
+				res := detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, strings.Join(headers, ","))
+				logScans = append(logScans, res)
 			}
 		}
 	} else {
@@ -118,26 +112,11 @@ func FuzzHeaders(r *http.Request, client *http.Client, pluginDir string, payload
 
 				// Check if match vulnerability
 				for _, resp := range responses {
-					channelsOpened++
-					go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, header, resultChan)
+					res := detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, header)
+					logScans = append(logScans, res)
 				}
 			}
 		}
-	}
-
-	// Wait for the expected number of results from goroutines
-	for i := 0; i < channelsOpened; i++ {
-		res := <-resultChan
-		log := detections.Result{
-			Found:   res.Found,
-			URL:     res.URL,
-			Payload: res.Payload,
-			Param:   res.Param,
-			RawReq:  res.RawReq,
-			RawResp: res.RawResp,
-			ResBody: res.ResBody,
-		}
-		logScans = append(logScans, log)
 	}
 
 	for _, res := range logScans {

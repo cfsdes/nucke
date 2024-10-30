@@ -17,14 +17,8 @@ import (
 func FuzzFormData(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
 	req := requests.CloneReq(r)
 
-	// Result channel
-	resultChan := make(chan detections.Result)
-
 	// Array com os resultados de cada teste executado falho
 	var logScans []detections.Result
-
-	// Counter of channels opened
-	var channelsOpened int
 
 	// Check if method is POST and content type is application/x-www-form-urlencoded
 	if !(req.Method == http.MethodPost && strings.Contains(req.Header.Get("Content-Type"), "application/x-www-form-urlencoded")) {
@@ -88,25 +82,10 @@ func FuzzFormData(r *http.Request, client *http.Client, pluginDir string, payloa
 
 			// Check if match vulnerability
 			for _, resp := range responses {
-				channelsOpened++
-				go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+				res := detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key)
+				logScans = append(logScans, res)
 			}
 		}
-	}
-
-	// Wait for any goroutine to send a result to the channel
-	for i := 0; i < channelsOpened; i++ {
-		res := <-resultChan
-		log := detections.Result{
-			Found:   res.Found,
-			URL:     res.URL,
-			Payload: res.Payload,
-			Param:   res.Param,
-			RawReq:  res.RawReq,
-			RawResp: res.RawResp,
-			ResBody: res.ResBody,
-		}
-		logScans = append(logScans, log)
 	}
 
 	for _, res := range logScans {

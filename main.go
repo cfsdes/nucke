@@ -5,7 +5,7 @@ import (
 	"github.com/cfsdes/nucke/internal/runner"
 )
 
-var version = "v0.2.4"
+var version = "v0.2.5"
 
 func main() {
 	initializers.Start(version)

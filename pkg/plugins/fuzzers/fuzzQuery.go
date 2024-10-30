@@ -22,12 +22,6 @@ func FuzzQuery(r *http.Request, client *http.Client, pluginDir string, payloads 
 	// Extract parameters from URL
 	params := req.URL.Query()
 
-	// Result channel
-	resultChan := make(chan detections.Result)
-
-	// Counter of channels opened
-	var channelsOpened int
-
 	// Array com os resultados de cada teste executado falho
 	var logScans []detections.Result
 
@@ -86,25 +80,10 @@ func FuzzQuery(r *http.Request, client *http.Client, pluginDir string, payloads 
 
 			// Check if match vulnerability
 			for _, resp := range responses {
-				channelsOpened++
-				go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+				res := detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key)
+				logScans = append(logScans, res)
 			}
 		}
-	}
-
-	// Wait for any goroutine to send a result to the channel
-	for i := 0; i < channelsOpened; i++ {
-		res := <-resultChan
-		log := detections.Result{
-			Found:   res.Found,
-			URL:     res.URL,
-			Payload: res.Payload,
-			Param:   res.Param,
-			RawReq:  res.RawReq,
-			RawResp: res.RawResp,
-			ResBody: res.ResBody,
-		}
-		logScans = append(logScans, log)
 	}
 
 	for _, res := range logScans {

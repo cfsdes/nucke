@@ -8,7 +8,7 @@ import (
 )
 
 // Matcher Check main function
-func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string, resultChan chan Result) {
+func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, oobID string, rawReq string, payload string, parameter string) Result {
 	// Get URL from raw request
 	url := requests.ExtractRawURL(rawReq)
 
@@ -52,18 +52,18 @@ func MatchCheck(pluginDir string, m Matcher, resp *http.Response, resTime int, o
 					break
 				}
 			}
-			resultChan <- Result{allTrue, url, payload, parameter, rawReq, rawResp, resBody}
+			return Result{allTrue, url, payload, parameter, rawReq, rawResp, resBody}
 
 			// OR condition
 		} else if m.Operator == "OR" {
 			for _, value := range foundArray {
 				if value {
-					resultChan <- Result{true, url, payload, parameter, rawReq, rawResp, resBody}
+					return Result{true, url, payload, parameter, rawReq, rawResp, resBody}
 				}
 			}
-			resultChan <- Result{false, url, payload, parameter, rawReq, rawResp, resBody}
+			return Result{false, url, payload, parameter, rawReq, rawResp, resBody}
 		}
-	} else {
-		resultChan <- Result{false, url, payload, parameter, rawReq, rawResp, resBody}
 	}
+
+	return Result{false, url, payload, parameter, rawReq, rawResp, resBody}
 }

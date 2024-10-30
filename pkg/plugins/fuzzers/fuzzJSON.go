@@ -17,17 +17,11 @@ import (
 	"github.com/fatih/color"
 )
 
-// Counter of channels opened
-var channelsOpened int
+// Array com os resultados de cada teste executado falho
+var logScans []detections.Result
 
 func FuzzJSON(r *http.Request, client *http.Client, pluginDir string, payloads []string, matcher detections.Matcher) (bool, string, string, string, string, string, []detections.Result) {
 	req := requests.CloneReq(r)
-
-	// Result channel
-	resultChan := make(chan detections.Result)
-
-	// Array com os resultados de cada teste executado falho
-	var logScans []detections.Result
 
 	// check if request is JSON
 	if !(req.Method == http.MethodPost && strings.Contains(req.Header.Get("Content-Type"), "application/json")) {
@@ -56,23 +50,8 @@ func FuzzJSON(r *http.Request, client *http.Client, pluginDir string, payloads [
 		for _, payload := range payloads {
 
 			// Check if value is map. If yes, recursively check it to inject payload
-			addPayloadToJson(jsonData, key, value, payload, resultChan, req, client, matcher, pluginDir)
+			addPayloadToJson(jsonData, key, value, payload, req, client, matcher, pluginDir)
 		}
-	}
-
-	// Wait for any goroutine to send a result to the channel
-	for i := 0; i < channelsOpened; i++ {
-		res := <-resultChan
-		log := detections.Result{
-			Found:   res.Found,
-			URL:     res.URL,
-			Payload: res.Payload,
-			Param:   res.Param,
-			RawReq:  res.RawReq,
-			RawResp: res.RawResp,
-			ResBody: res.ResBody,
-		}
-		logScans = append(logScans, log)
 	}
 
 	for _, res := range logScans {
@@ -85,11 +64,11 @@ func FuzzJSON(r *http.Request, client *http.Client, pluginDir string, payloads [
 }
 
 // function to add payload to JSON
-func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
+func addPayloadToJson(jsonData map[string]interface{}, key string, value interface{}, payload string, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
 	if innerMap, ok := value.(map[string]interface{}); ok {
 		// Se for um mapa, iterar sobre suas chaves e valores
 		for innerKey, innerValue := range innerMap {
-			addPayloadToJson(jsonData, innerKey, innerValue, payload, resultChan, req, client, matcher, pluginDir)
+			addPayloadToJson(jsonData, innerKey, innerValue, payload, req, client, matcher, pluginDir)
 		}
 	} else if innerArray, ok := value.([]interface{}); ok {
 		// Se for um array, não faz nada
@@ -102,17 +81,17 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
 			fmt.Printf("[%s] Error FuzzJSON: %v\n", Red("ERR"), err)
 		}
 
-		loopScan(jsonData, key, string(updatedArrayStr), resultChan, req, client, matcher, pluginDir)
+		loopScan(jsonData, key, string(updatedArrayStr), req, client, matcher, pluginDir)
 
 	} else {
 		// Update payloads {{.params}}
 		payload = parsers.ParsePayload(payload)
-		loopScan(jsonData, key, payload, resultChan, req, client, matcher, pluginDir)
+		loopScan(jsonData, key, payload, req, client, matcher, pluginDir)
 	}
 }
 
 // Scan to send request and check match
-func loopScan(jsonData map[string]interface{}, key string, payload string, resultChan chan detections.Result, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
+func loopScan(jsonData map[string]interface{}, key string, payload string, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
 
 	// Delay between requests
 	time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
@@ -151,8 +130,8 @@ func loopScan(jsonData map[string]interface{}, key string, payload string, resul
 
 	// Check if match vulnerability
 	for _, resp := range responses {
-		channelsOpened++
-		go detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key, resultChan)
+		res := detections.MatchCheck(pluginDir, matcher, resp, elapsed, oobID, rawReq, payload, key)
+		logScans = append(logScans, res)
 	}
 }
 
@@ -206,17 +185,4 @@ func createNewRequest(req *http.Request, reqBody *bytes.Reader) (*http.Request, 
 	}
 	newReq.Header = req.Header
 	return newReq, nil
-}
-
-// Count the total number of parameters recursively in the JSON data
-func countParams(jsonData map[string]interface{}) int {
-	count := 0
-	for _, value := range jsonData {
-		if innerMap, ok := value.(map[string]interface{}); ok {
-			count += countParams(innerMap)
-		} else {
-			count++
-		}
-	}
-	return count
 }
