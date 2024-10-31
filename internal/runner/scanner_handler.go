@@ -113,9 +113,8 @@ func runPlugin(scannerPlugin string, req *http.Request, client *http.Client) {
 	resStatusCode := requests.StatusCodeFromRaw(rawResp)
 
 	// Parse output if vulnerability is found
-	if found && resStatusCode != 429 {
-		var webhook string
-		webhook = report.GetWebhook(scannerPlugin)
+	if found && (resStatusCode < 400 || resStatusCode > 499) {
+		webhook := report.GetWebhook(scannerPlugin)
 		report.Output(scanName, webhook, severity, url, payload, param, rawReq, rawResp, pluginDir)
 	}
 }
