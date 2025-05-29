@@ -4,8 +4,6 @@ package globals
 var Port string                 // Port that nucke will listen
 var Threads int                 // Nucke scan threads
 var Delay int                   // Delay between fuzz requests in milliseconds
-var JaelesApi string            // Jaeles server API url
-var Jaeles bool                 // Jaeles boolean flag
 var Scope string                // Regex to set the scope to be scanned
 var Proxy string                // Proxy to use during scan
 var PluginsConfig string        // Config.yaml file for plugins
@@ -25,5 +23,5 @@ var Webhook map[string][]string // Webhooks to send scan results
 
 // Initiate global variables
 func init() {
-	Port, Threads, Delay, JaelesApi, Jaeles, Proxy, PluginsConfig, Output, ExportCA, Debug, Version, Stats, ListPlugins, Headers, CustomParams = ParseFlags()
+	Port, Threads, Delay, Proxy, PluginsConfig, Output, ExportCA, Debug, Version, Stats, ListPlugins, Headers, CustomParams = ParseFlags()
 }
