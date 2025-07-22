@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/cfsdes/nucke/pkg/globals"
 )
 
 /**
@@ -11,6 +13,9 @@ import (
  */
 
 func BasicRequest(r *http.Request, client *http.Client) (int, string, int, map[string][]string, string, error) {
+
+	// Delay between requests
+	time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
 
 	start := time.Now()
 

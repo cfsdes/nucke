@@ -37,9 +37,6 @@ func FuzzHeaders(r *http.Request, client *http.Client, pluginDir string, payload
 		// Create a new request for each payload
 		for _, payload := range payloads {
 
-			// Delay between requests
-			time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
-
 			// Update payloads {{.params}}
 			payload = parsers.ParsePayload(payload)
 
@@ -79,9 +76,6 @@ func FuzzHeaders(r *http.Request, client *http.Client, pluginDir string, payload
 		for _, header := range headers {
 			// Create a new request for each header and payload
 			for _, payload := range payloads {
-
-				// Delay between requests
-				time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
 
 				// Update payloads {{.params}}
 				payload = parsers.ParsePayload(payload)

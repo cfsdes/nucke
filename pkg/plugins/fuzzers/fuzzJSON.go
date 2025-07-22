@@ -93,9 +93,6 @@ func addPayloadToJson(jsonData map[string]interface{}, key string, value interfa
 // Scan to send request and check match
 func loopScan(jsonData map[string]interface{}, key string, payload string, req *http.Request, client *http.Client, matcher detections.Matcher, pluginDir string) {
 
-	// Delay between requests
-	time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
-
 	// Iterate over each json object and add payload to it
 	newJsonData := createNewJSONData(jsonData, key, payload)
 

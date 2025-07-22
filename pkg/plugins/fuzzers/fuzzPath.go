@@ -54,8 +54,6 @@ func FuzzPath(r *http.Request, client *http.Client, pluginDir string, payloads [
 
 		// Create a new payload with the original segment replaced
 		for _, payload := range payloads {
-			// Delay between requests
-			time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
 
 			// Replace "{{.original}}" with the current segment in the payload
 			payload = strings.Replace(payload, "{{.original}}", segment, -1)

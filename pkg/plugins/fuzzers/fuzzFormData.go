@@ -40,9 +40,6 @@ func FuzzFormData(r *http.Request, client *http.Client, pluginDir string, payloa
 	for key, values := range req.PostForm {
 		for _, payload := range payloads {
 
-			// Delay between requests
-			time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
-
 			// Update payloads {{.params}}
 			payload = parsers.ParsePayload(payload)
 

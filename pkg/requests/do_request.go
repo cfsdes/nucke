@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync/atomic"
+	"time"
 
 	"github.com/cfsdes/nucke/pkg/globals"
 )
@@ -16,6 +17,9 @@ import (
 func Do(r *http.Request, client *http.Client) []*http.Response {
 	// Clone Req
 	req := CloneReq(r)
+
+	// Delay between requests
+	time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
 
 	responses := []*http.Response{}
 	redirectLimit := 10 // Define o limite de redirecionamentos

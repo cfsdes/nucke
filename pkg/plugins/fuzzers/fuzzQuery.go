@@ -42,9 +42,6 @@ func FuzzQuery(r *http.Request, client *http.Client, pluginDir string, payloads 
 		// Create a new query string with the parameter replaced by a payload
 		for _, payload := range payloads {
 
-			// Delay between requests
-			time.Sleep(time.Duration(globals.Delay) * time.Millisecond)
-
 			// Update payloads {{.params}}
 			payload = parsers.ParsePayload(payload)
 
